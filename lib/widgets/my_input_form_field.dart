@@ -25,14 +25,19 @@ class MyInputFormField extends StatelessWidget {
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         labelText: labelText,
+        labelStyle: TextStyle(color: Colors.grey.shade400),
         hintText: hintText,
         prefixIcon: icon,
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFFAE37)),
+        fillColor: Colors.grey.shade300,
+        filled: true,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
 
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFFFFAE37), width: 2),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(30)),
+          borderSide: BorderSide(color: Colors.grey.shade400),
         ),
       ),
       validator: (value) {

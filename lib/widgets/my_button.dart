@@ -18,10 +18,16 @@ class MyButton extends StatelessWidget {
 
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: color ?? Color(0xFFFFAE37),
+          backgroundColor: color ?? Color.fromARGB(255, 56, 36, 13),
         ),
         onPressed: onPressed,
-        child: Text(text, style: TextStyle(color: Colors.white, fontSize: 20)),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            text,
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+        ),
       ),
     );
   }
