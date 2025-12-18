@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:resub/screen/third_onboarding_screen.dart';
+import 'package:resub/widgets/role_select.dart';
 
-class SecondOnboardingScreen extends StatelessWidget {
+class SecondOnboardingScreen extends StatefulWidget {
   const SecondOnboardingScreen({super.key});
+
+  @override
+  State<SecondOnboardingScreen> createState() => _SecondOnboardingScreenState();
+}
+
+class _SecondOnboardingScreenState extends State<SecondOnboardingScreen> {
+  String? selectedRole;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +23,7 @@ class SecondOnboardingScreen extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
-                'Manage your\nShopping list',
+                'Please select\nYour role',
                 style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
@@ -26,21 +34,34 @@ class SecondOnboardingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 60),
               // Clipboard icon
-              Icon(
-                Icons.assignment_outlined,
-                size: 120,
-                color: Colors.brown[800],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  RoleSelect(
+                    selectedRole: selectedRole,
+                    role: "Customer",
+                    title: "Customer",
+                    icon: Icons.person_outline,
+                    onTap: () {
+                      setState(() {
+                        selectedRole = 'Customer';
+                      });
+                    },
+                  ),
+                  RoleSelect(
+                    selectedRole: selectedRole,
+                    role: "Shop Owner",
+                    title: "Shop Owner",
+                    icon: Icons.store_mall_directory_outlined,
+                    onTap: () {
+                      setState(() {
+                        selectedRole = 'Shop Owner';
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 60),
-              Text(
-                'Manage your weekly shopping',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.brown[800],
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resub/screen/splash_screen.dart';
+import 'package:resub/theme/theme_data.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -9,7 +10,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: "ReSub",
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(),
+      theme: getApplicationTheme(),
       home: SplashScreen(),
     );
   }

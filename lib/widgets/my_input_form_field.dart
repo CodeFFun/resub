@@ -25,6 +25,7 @@ class MyInputFormField extends StatelessWidget {
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         labelText: labelText,
+        floatingLabelBehavior: FloatingLabelBehavior.never,
         labelStyle: TextStyle(color: Colors.grey.shade400),
         hintText: hintText,
         prefixIcon: icon,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:resub/common/my_snackbar.dart';
-import 'package:resub/screen/home_screen.dart';
+import 'package:resub/screen/first_onboarding_screen.dart';
+// import 'package:resub/screen/home_screen.dart';
 import 'package:resub/screen/login_screen.dart';
 import 'package:resub/widgets/my_button.dart';
 import 'package:resub/widgets/my_input_form_field.dart';
@@ -78,7 +79,9 @@ class SignupScreen extends StatelessWidget {
                         );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => FirstOnboardingScreen(),
+                          ),
                         );
                       }
                     },
