@@ -7,10 +7,12 @@ showMySnackBar({
 }) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(message, style: TextStyle(fontSize: 23)),
-      behavior: SnackBarBehavior.floating,
+      content: Text(message, style: TextStyle(fontSize: 12)),
       backgroundColor: color ?? Colors.green,
       duration: Duration(seconds: 2),
+      // width: 200,
+      behavior: SnackBarBehavior.floating,
+      // margin: EdgeInsets.only(top: 20, right: 20, left: 200),
     ),
   );
 }

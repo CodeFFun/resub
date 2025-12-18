@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:resub/screen/signup_screen.dart';
+import 'package:resub/screen/home_screen.dart';
 
 class ThirdOnboardingScreen extends StatelessWidget {
   const ThirdOnboardingScreen({super.key});
@@ -66,7 +66,7 @@ class ThirdOnboardingScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SignupScreen()),
+                      MaterialPageRoute(builder: (context) => HomeScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

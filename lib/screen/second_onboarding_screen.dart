@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:resub/screen/third_onboarding_screen.dart';
 
-class SecondOnboardingScreen extends StatelessWidget {
+class SecondOnboardingScreen extends StatefulWidget {
   const SecondOnboardingScreen({super.key});
+
+  @override
+  State<SecondOnboardingScreen> createState() => _SecondOnboardingScreenState();
+}
+
+class _SecondOnboardingScreenState extends State<SecondOnboardingScreen> {
+  String? selectedRole;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +22,7 @@ class SecondOnboardingScreen extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
-                'Manage your\nShopping list',
+                'Please select\nYour role',
                 style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
@@ -26,21 +33,105 @@ class SecondOnboardingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 60),
               // Clipboard icon
-              Icon(
-                Icons.assignment_outlined,
-                size: 120,
-                color: Colors.brown[800],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedRole = 'Customer';
+                      });
+                    },
+                    child: Card(
+                      color: (selectedRole == 'Customer')
+                          ? Colors.lightGreen.shade100
+                          : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: (selectedRole == 'Customer')
+                              ? Colors.green
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 120,
+                              color: Colors.brown[800],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Customer',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.brown[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedRole = 'Shop Owner';
+                      });
+                    },
+                    child: Card(
+                      color: (selectedRole == 'Shop Owner')
+                          ? Colors.lightGreen.shade100
+                          : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: (selectedRole == 'Shop Owner')
+                              ? Colors.green
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.store_mall_directory_outlined,
+                              size: 120,
+                              color: Colors.brown[800],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Shop Owner',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.brown[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 60),
-              Text(
-                'Manage your weekly shopping',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.brown[800],
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              // Text(
+              //   'Manage your weekly shopping',
+              //   style: TextStyle(
+              //     fontSize: 16,
+              //     color: Colors.brown[800],
+              //     height: 1.5,
+              //   ),
+              //   textAlign: TextAlign.center,
+              // ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
