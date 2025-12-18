@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resub/screen/third_onboarding_screen.dart';
+import 'package:resub/widgets/role_select.dart';
 
 class SecondOnboardingScreen extends StatefulWidget {
   const SecondOnboardingScreen({super.key});
@@ -36,102 +37,31 @@ class _SecondOnboardingScreenState extends State<SecondOnboardingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  InkWell(
+                  RoleSelect(
+                    selectedRole: selectedRole,
+                    role: "Customer",
+                    title: "Customer",
+                    icon: Icons.person_outline,
                     onTap: () {
                       setState(() {
                         selectedRole = 'Customer';
                       });
                     },
-                    child: Card(
-                      color: (selectedRole == 'Customer')
-                          ? Colors.lightGreen.shade100
-                          : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: (selectedRole == 'Customer')
-                              ? Colors.green
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 120,
-                              color: Colors.brown[800],
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Customer',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.brown[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ),
-                  InkWell(
+                  RoleSelect(
+                    selectedRole: selectedRole,
+                    role: "Shop Owner",
+                    title: "Shop Owner",
+                    icon: Icons.store_mall_directory_outlined,
                     onTap: () {
                       setState(() {
                         selectedRole = 'Shop Owner';
                       });
                     },
-                    child: Card(
-                      color: (selectedRole == 'Shop Owner')
-                          ? Colors.lightGreen.shade100
-                          : Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: (selectedRole == 'Shop Owner')
-                              ? Colors.green
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.store_mall_directory_outlined,
-                              size: 120,
-                              color: Colors.brown[800],
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Shop Owner',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.brown[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 60),
-              // Text(
-              //   'Manage your weekly shopping',
-              //   style: TextStyle(
-              //     fontSize: 16,
-              //     color: Colors.brown[800],
-              //     height: 1.5,
-              //   ),
-              //   textAlign: TextAlign.center,
-              // ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
