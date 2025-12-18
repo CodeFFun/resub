@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:resub/screen/bottom_navigation_screen/bottom_home_screen.dart';
+import 'package:resub/screen/bottom_navigation_screen/bottom_my_cart_screen.dart';
+import 'package:resub/screen/bottom_navigation_screen/bottom_order_screen.dart';
+import 'package:resub/screen/bottom_navigation_screen/bottom_profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -8,6 +12,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<Widget> lstBottomScreen = [
+    const BottomHomeScreen(),
+    const BottomMyCartScreen(),
+    const BottomOrderScreen(),
+    const BottomProfileScreen(),
+  ];
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -20,16 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: Center(
-        child: Text(
-          'Welcome to Homepage',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
-        ),
-      ),
+      body: lstBottomScreen[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
