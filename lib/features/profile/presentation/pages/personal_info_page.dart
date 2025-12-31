@@ -121,7 +121,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                     border: Border.all(color: Colors.grey.shade400),
                   ),
                   child: DropdownButtonFormField<String>(
-                    value: _selectedGender,
+                    initialValue: _selectedGender,
                     decoration: InputDecoration(
                       labelText: 'Select your gender',
                       floatingLabelBehavior: FloatingLabelBehavior.never,
