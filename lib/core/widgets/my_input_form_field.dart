@@ -7,6 +7,7 @@ class MyInputFormField extends StatelessWidget {
   final bool? obscureText;
   final String? hintText;
   final Icon? icon;
+
   const MyInputFormField({
     super.key,
     required this.controller,
@@ -22,7 +23,7 @@ class MyInputFormField extends StatelessWidget {
     return TextFormField(
       obscureText: obscureText ?? false,
       controller: controller,
-      keyboardType: TextInputType.emailAddress,
+      keyboardType: inputType,
       decoration: InputDecoration(
         labelText: labelText,
         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -35,16 +36,34 @@ class MyInputFormField extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(30)),
           borderSide: BorderSide(color: Colors.grey.shade400),
         ),
-
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(30)),
           borderSide: BorderSide(color: Colors.grey.shade400),
         ),
       ),
       validator: (value) {
-        if (value!.isEmpty) {
-          return "Please Enter $labelText";
+        if (value == null || value.isEmpty) {
+          return "Please enter $labelText";
         }
+
+        // Email validation
+        if (labelText.toLowerCase() == "email") {
+          if (!value.contains('@')) {
+            return "Please enter a valid email";
+          }
+        }
+
+        // Password validation
+        if (labelText.toLowerCase() == "password") {
+          final passwordRegex = RegExp(
+            r'^(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$',
+          );
+
+          if (!passwordRegex.hasMatch(value)) {
+            return "Password must have 6 letters,number and special character";
+          }
+        }
+
         return null;
       },
     );

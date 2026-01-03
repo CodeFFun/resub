@@ -7,10 +7,10 @@ part 'user_hive_model.g.dart';
 @HiveType(typeId: 0)
 class UserHiveModel extends HiveObject {
   @HiveField(0)
-  final String userId;
+  final String? userId;
 
   @HiveField(1)
-  final String fullName;
+  final String? fullName;
 
   @HiveField(2)
   final String email;
@@ -22,7 +22,7 @@ class UserHiveModel extends HiveObject {
   final String? password;
 
   @HiveField(5)
-  final String role;
+  final String? role;
 
   @HiveField(6)
   final String? profilePictureUrl;
@@ -44,14 +44,15 @@ class UserHiveModel extends HiveObject {
     required this.fullName,
     required this.email,
     required this.userName,
-    required this.role,
+    String? role,
     this.profilePictureUrl,
     this.phoneNumber,
     this.dateOfBirth,
     this.alternateEmail,
     this.gender,
     this.password,
-  }) : userId = userId ?? Uuid().v4();
+  }) : userId = userId ?? Uuid().v4(),
+       role = role ?? 'customer';
 
   //from entity
   factory UserHiveModel.fromEntity(UserEntity entity) {

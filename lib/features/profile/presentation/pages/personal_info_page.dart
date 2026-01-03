@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:resub/features/dashboard/presentation/pages/home_screen.dart';
+import 'package:resub/features/auth/presentation/pages/login_screen.dart';
+// import 'package:resub/features/dashboard/presentation/pages/home_screen.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
 
@@ -166,15 +167,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   child: MyButton(
                     text: "Next",
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
+                      // if (_formKey.currentState!.validate()) {
                         // Process data
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const HomeScreen(),
+                            builder: (context) => const LoginScreen(),
                           ),
                         );
-                      }
+                      // }
                     },
                   ),
                 ),

@@ -18,10 +18,10 @@ class UserHiveModelAdapter extends TypeAdapter<UserHiveModel> {
     };
     return UserHiveModel(
       userId: fields[0] as String?,
-      fullName: fields[1] as String,
+      fullName: fields[1] as String?,
       email: fields[2] as String,
       userName: fields[3] as String,
-      role: fields[5] as String,
+      role: fields[5] as String?,
       profilePictureUrl: fields[6] as String?,
       phoneNumber: fields[7] as String?,
       dateOfBirth: fields[8] as DateTime?,
