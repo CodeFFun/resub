@@ -5,12 +5,12 @@ import 'package:resub/features/user/data/models/user_hive_model.dart';
 
 //provider
 
-final authLocalDatasourceProvider = Provider<IAuthDatasource>((ref) {
+final authLocalDatasourceProvider = Provider<IAuthLocalDatasource>((ref) {
   final hiveService = ref.watch(hiveServiceProvider);
   return AuthLocalDatasource(hiveService: hiveService);
 });
 
-class AuthLocalDatasource implements IAuthDatasource {
+class AuthLocalDatasource implements IAuthLocalDatasource {
   final HiveService _hiveService;
 
   AuthLocalDatasource({required HiveService hiveService})
