@@ -41,7 +41,7 @@ class UserHiveModel extends HiveObject {
 
   UserHiveModel({
     String? userId,
-    required this.fullName,
+    this.fullName,
     required this.email,
     required this.userName,
     String? role,

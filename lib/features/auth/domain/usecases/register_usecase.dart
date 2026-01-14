@@ -19,11 +19,7 @@ class RegisterUsecaseParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-        email,
-        userName,
-        password,
-      ];
+  List<Object?> get props => [email, userName, password];
 }
 
 //register provider
@@ -33,15 +29,14 @@ final registerUsecaseProvider = Provider<RegisterUsecase>((ref) {
   return RegisterUsecase(authRepository: authRepository);
 });
 
-class RegisterUsecase implements UsecaseWithParms<bool, RegisterUsecaseParams>{
-
+class RegisterUsecase implements UsecaseWithParms<bool, RegisterUsecaseParams> {
   final IAuthRepository _authRepository;
 
   RegisterUsecase({required IAuthRepository authRepository})
-      : _authRepository = authRepository;
+    : _authRepository = authRepository;
   @override
   Future<Either<Failure, bool>> call(RegisterUsecaseParams params) {
-    final userEntity =  UserEntity(
+    final userEntity = UserEntity(
       email: params.email,
       userName: params.userName,
       password: params.password,

@@ -31,7 +31,7 @@ class UserSessionService {
   Future<void> saveUserSession({
     required String userId,
     required String email,
-    required String fullName,
+    String? fullName,
     required String username,
     String? phoneNumber,
     String? batchId,
@@ -40,8 +40,10 @@ class UserSessionService {
     await _prefs.setBool(_keyIsLoggedIn, true);
     await _prefs.setString(_keyUserId, userId);
     await _prefs.setString(_keyUserEmail, email);
-    await _prefs.setString(_keyUserFullName, fullName);
     await _prefs.setString(_keyUserUsername, username);
+    if (fullName != null) {
+      await _prefs.setString(_keyUserPhoneNumber, fullName);
+    }
     if (phoneNumber != null) {
       await _prefs.setString(_keyUserPhoneNumber, phoneNumber);
     }
