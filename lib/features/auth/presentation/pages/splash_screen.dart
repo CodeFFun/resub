@@ -1,18 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/auth/presentation/pages/login_screen.dart';
-// import 'package:resub/screen/first_onboarding_screen.dart';
-// import 'package:resub/features/auth/presentation/pages/signup_screen.dart';
+import 'package:resub/features/dashboard/presentation/pages/home_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -23,6 +24,27 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _redirect());
+  }
+
+  void _redirect() {
+    final session = ref.read(userSessionServiceProvider);
+    final hasUser =
+        (session.getCurrentUserId()?.isNotEmpty ?? false) ||
+        (session.getCurrentUserUsername()?.isNotEmpty ?? false);
+
+    if (hasUser) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
   }
 
   @override
