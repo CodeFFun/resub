@@ -1,189 +1,348 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:resub/features/auth/presentation/pages/login_screen.dart';
-// import 'package:resub/features/dashboard/presentation/pages/home_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:resub/core/api/api_endpoints.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
+import 'package:resub/core/utils/snackbar_utils.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
+import 'package:resub/features/dashboard/presentation/pages/home_screen.dart';
+import 'package:resub/features/profile/presentation/state/profile_state.dart';
+import 'package:resub/features/profile/presentation/view_models/profile_view_model.dart';
+import 'package:resub/features/profile/presentation/widgets/media_picker_bottom_sheet.dart';
 
-class PersonalInfoPage extends StatefulWidget {
+class PersonalInfoPage extends ConsumerStatefulWidget {
   const PersonalInfoPage({super.key});
 
   @override
-  State<PersonalInfoPage> createState() => _PersonalInfoPageState();
+  ConsumerState<PersonalInfoPage> createState() => _PersonalInfoPageState();
 }
 
-class _PersonalInfoPageState extends State<PersonalInfoPage> {
+class _PersonalInfoPageState extends ConsumerState<PersonalInfoPage> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
-  final _dobController = TextEditingController();
-  String? _selectedGender;
+  final List<XFile?> _profilePictureUrl = [];
+  String? _profilePicture;
+  String _userName = '';
+  final _imagePicker = ImagePicker();
+  bool _isDataLoaded = false; // Track if data has been loaded
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
-    _dobController.dispose();
     super.dispose();
   }
 
-  // Future<void> _selectDate(BuildContext context) async {
-  //   final DateTime? picked = await showDatePicker(
-  //     context: context,
-  //     initialDate: DateTime.now(),
-  //     firstDate: DateTime(1900),
-  //     lastDate: DateTime.now(),
-  //   );
-  //   if (picked != null) {
-  //     setState(() {
-  //       _dobController.text = "${picked.day}/${picked.month}/${picked.year}";
-  //     });
-  //   }
-  // }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
+  }
+
+  Future<void> _loadUserData() async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+
+    if (userId != null) {
+      await ref
+          .read(profileViewModelProvider.notifier)
+          .getProfileById(userId: userId);
+    }
+  }
+
+  Future<bool> _requestPermission(Permission permission) async {
+    final status = await permission.status;
+    if (status.isGranted) return true;
+
+    if (status.isDenied) {
+      final result = await permission.request();
+      return result.isGranted;
+    }
+
+    if (status.isPermanentlyDenied) {
+      // _showPermissionDeniedDialog();
+      return false;
+    }
+
+    return false;
+  }
+
+  Future<void> _pickFromCamera() async {
+    final hasPermission = await _requestPermission(Permission.camera);
+    if (!hasPermission) return;
+
+    final XFile? photo = await _imagePicker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 80,
+    );
+
+    if (photo != null) {
+      setState(() {
+        _profilePictureUrl.clear();
+        _profilePictureUrl.add(XFile(photo.path));
+      });
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        setState(() {
+          _profilePictureUrl.clear();
+          _profilePictureUrl.add(XFile(image.path));
+        });
+      }
+    } catch (e) {
+      debugPrint('Image picker error: $e');
+    }
+  }
+
+  void _showMediaPicker() {
+    MediaPickerBottomSheet.show(
+      context,
+      onCameraTap: _pickFromCamera,
+      onGalleryTap: _pickFromGallery,
+    );
+  }
+
+  void _clearImage() {
+    setState(() {
+      _profilePictureUrl.clear();
+    });
+  }
+
+  void _handleSubmit() async {
+    if (_formKey.currentState!.validate()) {
+      // Process data
+      await ref
+          .read(profileViewModelProvider.notifier)
+          .updateProfile(
+            fullName: _fullNameController.text.trim(),
+            phoneNumber: _phoneController.text.trim(),
+            alternateEmail: _emailController.text.trim(),
+            profilePictureUrl: _profilePictureUrl.isNotEmpty
+                ? File(_profilePictureUrl.first!.path)
+                : null,
+          );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ProfileState>(profileViewModelProvider, (previous, next) {
+      if (next.status == ProfileStatus.loaded &&
+          !_isDataLoaded &&
+          next.user != null) {
+        _isDataLoaded = true;
+        _fullNameController.text = next.user!.fullName ?? '';
+        _phoneController.text = next.user!.phoneNumber ?? '';
+        _emailController.text = next.user!.alternateEmail ?? '';
+        _profilePicture = next.user!.profilePicture;
+        _userName = next.user!.userName ?? '';
+      } else if (next.status == ProfileStatus.updated) {
+        SnackbarUtils.showSuccess(context, 'Profile updated successfully!');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else if (next.status == ProfileStatus.error &&
+          next.errorMessage != null) {
+        SnackbarUtils.showError(context, next.errorMessage!);
+      }
+    });
+
+    final profileState = ref.watch(profileViewModelProvider);
+
     return Scaffold(
-      // backgroundColor: const Color(0xFFF5F5F5),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                // Profile Avatar
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.pink.shade300,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    size: 50,
-                    color: Colors.white,
-                  ),
+      body: profileState.status == ProfileStatus.loading && !_isDataLoaded
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 60,
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Personal Information',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 30),
-
-                // Full Name
-                MyInputFormField(
-                  controller: _fullNameController,
-                  labelText: 'Full name',
-                  hintText: 'Enter your full name',
-                  icon: const Icon(Icons.person_outline),
-                  inputType: TextInputType.text,
-                ),
-                const SizedBox(height: 25),
-
-                // Phone Number
-                MyInputFormField(
-                  controller: _phoneController,
-                  labelText: 'Phone number',
-                  hintText: 'Enter your phone number',
-                  icon: const Icon(Icons.phone_outlined),
-                  inputType: TextInputType.phone,
-                ),
-                const SizedBox(height: 25),
-
-                // Alternate Email
-                MyInputFormField(
-                  controller: _emailController,
-                  labelText: 'Alternate email',
-                  hintText: 'Enter your email',
-                  icon: const Icon(Icons.email_outlined),
-                  inputType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 25),
-
-                // Date of Birth
-                MyInputFormField(
-                  controller: _dobController,
-                  labelText: 'Date of birth',
-                  hintText: 'Select your date of birth',
-                  icon: const Icon(Icons.calendar_today_outlined),
-                ),
-                const SizedBox(height: 25),
-
-                // Gender Dropdown
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: Colors.grey.shade400),
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedGender,
-                    decoration: InputDecoration(
-                      labelText: 'Select your gender',
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: const Icon(Icons.wc_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.shade300,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 18,
-                      ),
-                    ),
-                    items: ['Male', 'Female', 'Other'].map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedGender = newValue;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select your gender';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(height: 45),
-
-                // Next Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: MyButton(
-                    text: "Next",
-                    onPressed: () {
-                      // if (_formKey.currentState!.validate()) {
-                        // Process data
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      // Profile Picture Section
+                      if (_profilePictureUrl.isNotEmpty)
+                        GestureDetector(
+                          onTap: _showMediaPicker,
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 60,
+                                backgroundColor: Colors.pink.shade300,
+                                backgroundImage:
+                                    FileImage(
+                                          File(_profilePictureUrl.first!.path),
+                                        )
+                                        as ImageProvider?,
+                                child: null,
+                              ),
+                              Positioned(
+                                top: 10,
+                                right: 10,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: _clearImage,
+                                    child: const Text(
+                                      'x',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                      // }
-                    },
+                        )
+                      else if (_profilePicture != null &&
+                          _profilePicture!.isNotEmpty)
+                        GestureDetector(
+                          onTap: _showMediaPicker,
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 60,
+                                backgroundImage: NetworkImage(
+                                  '${ApiEndpoints.baseUrl}$_profilePicture',
+                                ),
+                              ),
+                              Positioned(
+                                top: 10,
+                                right: 10,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: _clearImage,
+                                    child: const Text(
+                                      'x',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        GestureDetector(
+                          onTap: _showMediaPicker,
+                          child: CircleAvatar(
+                            radius: 60,
+                            backgroundColor: Colors.pink.shade300,
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 20),
+                      Text(
+                        _userName,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Full Name
+                      MyInputFormField(
+                        controller: _fullNameController,
+                        labelText: 'Full name',
+                        hintText: 'Enter your full name',
+                        icon: const Icon(Icons.person_outline),
+                        inputType: TextInputType.text,
+                      ),
+                      const SizedBox(height: 25),
+
+                      // Phone Number
+                      MyInputFormField(
+                        controller: _phoneController,
+                        labelText: 'Phone number',
+                        hintText: 'Enter your phone number',
+                        icon: const Icon(Icons.phone_outlined),
+                        inputType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 25),
+
+                      // Alternate Email
+                      MyInputFormField(
+                        controller: _emailController,
+                        labelText: 'Alternate email',
+                        hintText: 'Enter your email',
+                        icon: const Icon(Icons.email_outlined),
+                        inputType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 45),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Back Button
+                          SizedBox(
+                            width: 180,
+                            height: 56,
+                            child: MyButton(
+                              text: "Back",
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              color: Colors.red,
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          // Next Button
+                          Expanded(
+                            child: SizedBox(
+                              height: 56,
+                              child: MyButton(
+                                text: "Update",
+                                onPressed: _handleSubmit,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
