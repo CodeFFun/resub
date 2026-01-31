@@ -1,27 +1,29 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 
 class UserEntity extends Equatable {
   final String? userId;
-  final String userName;
-  final String email;
+  final String? userName;
+  final String? email;
   final String? fullName;
   final String? role;
-  final String? profilePictureUrl;
+  final String? profilePicture;
+  final File? profilePictureUrl;
   final String? phoneNumber;
   final String? password;
-  final DateTime? dateOfBirth;
   final String? alternateEmail;
   final String? gender;
 
   const UserEntity({
     this.userId,
     this.fullName,
-    required this.email,
-    required this.userName,
+    this.email,
+    this.userName,
     this.role,
+    this.profilePicture,
     this.profilePictureUrl,
     this.phoneNumber,
-    this.dateOfBirth,
     this.alternateEmail,
     this.gender,
     this.password,
@@ -32,11 +34,10 @@ class UserEntity extends Equatable {
     userId,
     fullName,
     email,
+    profilePicture,
     profilePictureUrl,
     role,
     phoneNumber,
-    dateOfBirth,
-    alternateEmail,
     gender,
     userName,
     password,

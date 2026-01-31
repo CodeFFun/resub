@@ -14,35 +14,41 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  late Timer _timer;
+
   @override
   void initState() {
     super.initState();
-
-    Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+    _timer = Timer(Duration(seconds: 3), () {
+      if (mounted) {
+        _redirect();
+      }
     });
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _redirect());
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   void _redirect() {
+    if (!mounted) return;
+
     final session = ref.read(userSessionServiceProvider);
     final hasUser =
-        (session.getCurrentUserId()?.isNotEmpty ?? false) ||
-        (session.getCurrentUserUsername()?.isNotEmpty ?? false);
+        (session.getCurrentUserId()?.isNotEmpty ?? false) &&
+        (session.getCurrentUserEmail()?.isNotEmpty ?? false);
 
     if (hasUser) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
   }

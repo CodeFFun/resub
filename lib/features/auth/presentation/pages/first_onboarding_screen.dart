@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:resub/features/auth/presentation/pages/second_onboarding_screen.dart';
 
 class FirstOnboardingScreen extends StatelessWidget {
-  const FirstOnboardingScreen({super.key});
+  final String? email;
+
+  const FirstOnboardingScreen({super.key, this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,9 @@ class FirstOnboardingScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SecondOnboardingScreen(),
+                        builder: (context) => SecondOnboardingScreen(
+                          email: email ?? '',
+                        ),
                       ),
                     );
                   },
