@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,36 +24,46 @@ class UserSessionService {
   static const String _keyUserFullName = 'user_full_name';
   static const String _keyUserUsername = 'user_username';
   static const String _keyUserPhoneNumber = 'user_phone_number';
-  static const String _keyUserRole = 'user_batch_id';
+  static const String _keyUserRole = 'user_role';
   static const String _keyUserProfilePicture = 'user_profile_picture';
 
   UserSessionService({required SharedPreferences prefs}) : _prefs = prefs;
 
   // Save user session after login
   Future<void> saveUserSession({
-    required String userId,
-    required String email,
+    String? userId,
+    String? email,
     String? fullName,
-    required String username,
+    String? username,
     String? phoneNumber,
-    String? batchId,
-    String? profilePicture,
+    String? role,
+    File? profilePicture,
+    String? profilePictureUrl,
   }) async {
     await _prefs.setBool(_keyIsLoggedIn, true);
-    await _prefs.setString(_keyUserId, userId);
-    await _prefs.setString(_keyUserEmail, email);
-    await _prefs.setString(_keyUserUsername, username);
+    // await _prefs.setString(_keyUserId, userId);
+    if (userId != null) {
+      await _prefs.setString(_keyUserId, userId);
+    }
+    // await _prefs.setString(_keyUserEmail, email);
+    if (email != null) {
+      await _prefs.setString(_keyUserEmail, email);
+    }
+    // await _prefs.setString(_keyUserUsername, username);
+    if (username != null) {
+      await _prefs.setString(_keyUserUsername, username);
+    }
     if (fullName != null) {
       await _prefs.setString(_keyUserPhoneNumber, fullName);
     }
     if (phoneNumber != null) {
       await _prefs.setString(_keyUserPhoneNumber, phoneNumber);
     }
-    if (batchId != null) {
-      await _prefs.setString(_keyUserRole, batchId);
+    if (role != null) {
+      await _prefs.setString(_keyUserRole, role);
     }
-    if (profilePicture != null) {
-      await _prefs.setString(_keyUserProfilePicture, profilePicture);
+    if (profilePictureUrl != null) {
+      await _prefs.setString(_keyUserProfilePicture, profilePictureUrl);
     }
   }
 

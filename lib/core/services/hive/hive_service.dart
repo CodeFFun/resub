@@ -47,7 +47,7 @@ class HiveService {
       Hive.box<UserHiveModel>(HiveTableConstant.userTable);
 
   // Register user
-  Future<UserHiveModel> register(UserHiveModel user) async {
+  Future<UserHiveModel?> register(UserHiveModel user) async {
     await _authBox.put(user.userId, user);
     return user;
   }
@@ -109,5 +109,23 @@ class HiveService {
   Future<bool> deleteUser(String authId) async {
     await _authBox.delete(authId);
     return true;
+  }
+
+  // Update user by email
+  bool updateUserByEmail(String email, UserHiveModel updateData) {
+    try {
+      final user = getUserByEmail(email);
+      if (user != null) {
+        final updatedUser = UserHiveModel(
+          userId: user.userId,
+          role: updateData.role ?? user.role,
+        );
+        _authBox.put(updatedUser.userId, updatedUser);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 }
