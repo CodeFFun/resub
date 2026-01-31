@@ -24,7 +24,7 @@ class UserHiveModelAdapter extends TypeAdapter<UserHiveModel> {
       role: fields[5] as String?,
       profilePictureUrl: fields[6] as String?,
       phoneNumber: fields[7] as String?,
-      dateOfBirth: fields[8] as DateTime?,
+
       alternateEmail: fields[9] as String?,
       gender: fields[10] as String?,
       password: fields[4] as String?,
@@ -52,8 +52,6 @@ class UserHiveModelAdapter extends TypeAdapter<UserHiveModel> {
       ..writeByte(7)
       ..write(obj.phoneNumber)
       ..writeByte(8)
-      ..write(obj.dateOfBirth)
-      ..writeByte(9)
       ..write(obj.alternateEmail)
       ..writeByte(10)
       ..write(obj.gender);

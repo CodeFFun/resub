@@ -13,10 +13,10 @@ class UserHiveModel extends HiveObject {
   final String? fullName;
 
   @HiveField(2)
-  final String email;
+  final String? email;
 
   @HiveField(3)
-  final String userName;
+  final String? userName;
 
   @HiveField(4)
   final String? password;
@@ -31,9 +31,6 @@ class UserHiveModel extends HiveObject {
   final String? phoneNumber;
 
   @HiveField(8)
-  final DateTime? dateOfBirth;
-
-  @HiveField(9)
   final String? alternateEmail;
 
   @HiveField(10)
@@ -42,12 +39,11 @@ class UserHiveModel extends HiveObject {
   UserHiveModel({
     String? userId,
     this.fullName,
-    required this.email,
-    required this.userName,
+    this.email,
+    this.userName,
     String? role,
     this.profilePictureUrl,
     this.phoneNumber,
-    this.dateOfBirth,
     this.alternateEmail,
     this.gender,
     this.password,
@@ -62,9 +58,8 @@ class UserHiveModel extends HiveObject {
       email: entity.email,
       userName: entity.userName,
       role: entity.role,
-      profilePictureUrl: entity.profilePictureUrl,
+      profilePictureUrl: entity.profilePicture,
       phoneNumber: entity.phoneNumber,
-      dateOfBirth: entity.dateOfBirth,
       alternateEmail: entity.alternateEmail,
       gender: entity.gender,
       password: entity.password,
@@ -80,10 +75,8 @@ class UserHiveModel extends HiveObject {
       email: email,
       userName: userName,
       role: role,
-      profilePictureUrl: profilePictureUrl,
+      profilePicture: profilePictureUrl,
       phoneNumber: phoneNumber,
-      dateOfBirth: dateOfBirth,
-      alternateEmail: alternateEmail,
       gender: gender,
       password: password,
     );
