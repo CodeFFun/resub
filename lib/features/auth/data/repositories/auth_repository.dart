@@ -103,12 +103,13 @@ class AuthRepository implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> register(UserEntity authEntity) async {
+  Future<Either<Failure, UserEntity?>> register(UserEntity authEntity) async {
     if (await _networkInfo.isConnected) {
       try {
         final apiModel = UserApiModel.fromEntity(authEntity);
-        await _authRemoteDatasource.register(apiModel);
-        return const Right(true);
+        final user = await _authRemoteDatasource.register(apiModel);
+        final userEntity = user.toEntity();
+        return Right(userEntity);
       } on DioException catch (e) {
         return Left(
           ApiFailure(
@@ -126,8 +127,48 @@ class AuthRepository implements IAuthRepository {
           email: authEntity.email,
           password: authEntity.password,
         );
-        await _authDatasource.register(authModel);
-        return const Right(true);
+        final user = await _authDatasource.register(authModel);
+        final userEntity = user?.toEntity();
+        return Right(userEntity);
+      } catch (e) {
+        return Left(LocalDatabaseFailure(message: e.toString()));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> updateUserByEmail(
+    String email,
+    UserEntity updateData,
+  ) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final apiModel = UserApiModel.fromEntity(updateData);
+        final result = await _authRemoteDatasource.updateUserByEmail(
+          email,
+          apiModel,
+        );
+        return Right(result);
+      } on DioException catch (e) {
+        return Left(
+          ApiFailure(
+            message: e.response?.data['message'] ?? 'Update failed',
+            statusCode: e.response?.statusCode,
+          ),
+        );
+      } catch (e) {
+        return Left(ApiFailure(message: e.toString()));
+      }
+    } else {
+      try {
+        final apiModel = UserHiveModel(
+          fullName: updateData.fullName,
+          phoneNumber: updateData.phoneNumber,
+          role: updateData.role,
+          alternateEmail: updateData.alternateEmail,
+        );
+        final result = await _authDatasource.updateUserByEmail(email, apiModel);
+        return Right(result);
       } catch (e) {
         return Left(LocalDatabaseFailure(message: e.toString()));
       }
