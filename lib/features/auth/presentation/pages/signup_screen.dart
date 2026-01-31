@@ -30,7 +30,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Future<void> _handleSignup() async {
-    if (_formKey.currentState!.validate()) {
+    final formState = _formKey.currentState;
+    if (formState != null && formState.validate()) {
       await ref
           .read(authViewModelProvider.notifier)
           .register(
@@ -53,9 +54,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       if (next.status == AuthStatus.registered) {
         SnackbarUtils.showSuccess(
           context,
-          'Registration successful! Please login.',
+          'Registration successful! Please complete your profile.',
         );
-        _navigateToFirstOnboardingScreen();
+        AppRoutes.pushReplacement(
+          context,
+          FirstOnboardingScreen(email: _emailController.text.trim()),
+        );
       } else if (next.status == AuthStatus.error && next.errorMessage != null) {
         SnackbarUtils.showError(context, next.errorMessage!);
       }

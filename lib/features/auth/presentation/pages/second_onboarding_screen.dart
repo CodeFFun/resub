@@ -1,19 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:resub/features/auth/presentation/pages/third_onboarding_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/core/utils/snackbar_utils.dart';
+import 'package:resub/features/auth/presentation/pages/login_screen.dart';
+import 'package:resub/features/auth/presentation/state/auth_state.dart';
+import 'package:resub/features/auth/presentation/view_models/auth_view_model.dart';
 import 'package:resub/features/auth/presentation/widgets/role_select.dart';
+import 'package:resub/features/user/domain/entities/user_entity.dart';
 
-class SecondOnboardingScreen extends StatefulWidget {
-  const SecondOnboardingScreen({super.key});
+class SecondOnboardingScreen extends ConsumerStatefulWidget {
+  final String email;
+
+  const SecondOnboardingScreen({super.key, required this.email});
 
   @override
-  State<SecondOnboardingScreen> createState() => _SecondOnboardingScreenState();
+  ConsumerState<SecondOnboardingScreen> createState() =>
+      _SecondOnboardingScreenState();
 }
 
-class _SecondOnboardingScreenState extends State<SecondOnboardingScreen> {
+class _SecondOnboardingScreenState
+    extends ConsumerState<SecondOnboardingScreen> {
   String? selectedRole;
+
+  Future<void> _handleNextPressed() async {
+    if (selectedRole == null) {
+      SnackbarUtils.showError(context, 'Please select a role to continue');
+      return;
+    }
+
+    final updateData = UserEntity(
+      role: selectedRole == 'Shop Owner' ? 'shop' : 'customer',
+    );
+
+    await ref
+        .read(authViewModelProvider.notifier)
+        .updateUserByEmail(email: widget.email, updateData: updateData);
+  }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if (next.status == AuthStatus.authenticated) {
+        SnackbarUtils.showSuccess(context, 'Role created successfully!');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      } else if (next.status == AuthStatus.error && next.errorMessage != null) {
+        SnackbarUtils.showError(context, next.errorMessage!);
+      }
+    });
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -67,14 +102,7 @@ class _SecondOnboardingScreenState extends State<SecondOnboardingScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ThirdOnboardingScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: _handleNextPressed,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown[800],
                     shape: RoundedRectangleBorder(
