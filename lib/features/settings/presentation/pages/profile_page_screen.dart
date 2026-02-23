@@ -10,6 +10,7 @@ import 'package:resub/features/profile/presentation/pages/personal_info_page.dar
 import 'package:resub/features/profile/presentation/state/profile_state.dart';
 import 'package:resub/features/profile/presentation/view_models/profile_view_model.dart';
 import 'package:resub/features/settings/presentation/widgets/profile_menu_item.dart';
+import 'package:resub/features/shop/presentation/pages/shop_page_screen.dart';
 
 class ProfilePageScreen extends ConsumerStatefulWidget {
   const ProfilePageScreen({super.key});
@@ -153,7 +154,7 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                 title: 'Shops',
                 subtitle: 'View and manage shops',
                 onTap: () {
-                  // Navigate to Shops
+                  AppRoutes.push(context, const ShopPageScreen());
                 },
               ),
 
