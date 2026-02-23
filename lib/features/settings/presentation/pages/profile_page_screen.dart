@@ -7,6 +7,7 @@ import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/address/presentation/pages/address_page_screen.dart';
 import 'package:resub/features/auth/presentation/pages/login_screen.dart';
 import 'package:resub/features/category/presentation/pages/category_page_screen.dart';
+import 'package:resub/features/product/presentation/pages/product_page_screen.dart';
 import 'package:resub/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:resub/features/profile/presentation/state/profile_state.dart';
 import 'package:resub/features/profile/presentation/view_models/profile_view_model.dart';
@@ -173,7 +174,7 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                 title: 'Product',
                 subtitle: 'Manage products',
                 onTap: () {
-                  // Navigate to Product
+                  AppRoutes.push(context, const ProductPageScreen());
                 },
               ),
 
