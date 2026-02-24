@@ -1,74 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/routes/app_routes.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
+import 'package:resub/features/address/domain/entities/address_entity.dart';
+import 'package:resub/features/address/presentation/state/address_state.dart';
+import 'package:resub/features/address/presentation/view_models/address_view_model.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
+import 'package:resub/features/category/presentation/state/category_state.dart';
+import 'package:resub/features/category/presentation/view_models/category_view_model.dart';
 import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 import 'package:resub/features/shop/presentation/pages/create_shop_screen.dart';
 import 'package:resub/features/shop/presentation/pages/update_shop_screen.dart';
+import 'package:resub/features/shop/presentation/state/shop_state.dart';
+import 'package:resub/features/shop/presentation/view_models/shop_view_model.dart';
 import 'package:resub/features/shop/presentation/widgets/shop_card.dart';
 
-class ShopPageScreen extends StatefulWidget {
+class ShopPageScreen extends ConsumerStatefulWidget {
   const ShopPageScreen({super.key});
 
   @override
-  State<ShopPageScreen> createState() => _ShopPageScreenState();
+  ConsumerState<ShopPageScreen> createState() => _ShopPageScreenState();
 }
 
-class _ShopPageScreenState extends State<ShopPageScreen> {
-  late List<ShopEntity> _shops;
-  late List<String> _categories;
-  late List<String> _addresses;
+class _ShopPageScreenState extends ConsumerState<ShopPageScreen> {
+  late List<ShopEntity> _shops = [];
+  late List<CategoryEntity> _categories = [];
+  late List<AddressEntity> _addresses = [];
 
   @override
   void initState() {
     super.initState();
-    // Initialize with dummy data
-    _shops = [
-      const ShopEntity(
-        id: '1',
-        name: 'Fresh Bakery',
-        image: null,
-        about: 'Fresh baked goods daily',
-        acceptsSubscription: true,
-        category: 'Bakery',
-        address: '123 Main Street, San Francisco',
-      ),
-    ];
-
-    // Dummy categories and addresses
-    _categories = ['Bakery', 'Electronics', 'Clothing', 'Groceries', 'Books'];
-    _addresses = [
-      '123 Main Street, San Francisco',
-      '456 Oak Avenue, Los Angeles',
-      '789 Pine Road, New York',
-    ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadShopData();
+    });
   }
 
-  void _handleAddShop(ShopEntity shop) {
-    setState(() {
-      _shops.add(
-        shop.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()),
-      );
-    });
+  Future<void> _loadShopData() async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+    if (userId != null) {
+      await ref.read(shopViewModelProvider.notifier).getAllShopsOfUser();
+      await ref.read(addressViewModelProvider.notifier).getAddressesOfUser();
+      await ref.read(categoryViewModelProvider.notifier).getAllShopCategories();
+    }
+  }
+
+  void _handleAddShop(ShopEntity shop) async {
+    await ref.read(shopViewModelProvider.notifier).createShop(shopEntity: shop);
     if (mounted) {
       Navigator.pop(context);
     }
   }
 
-  void _handleUpdateShop(ShopEntity shop) {
-    setState(() {
-      final index = _shops.indexWhere((s) => s.id == shop.id);
-      if (index != -1) {
-        _shops[index] = shop;
-      }
-    });
+  void _handleUpdateShop(ShopEntity shop) async {
+    await ref
+        .read(shopViewModelProvider.notifier)
+        .updateShop(shopId: shop.id ?? '', shopEntity: shop);
     if (mounted) {
       Navigator.pop(context);
     }
   }
 
-  void _handleDeleteShop(String id) {
-    setState(() {
-      _shops.removeWhere((shop) => shop.id == id);
-    });
+  void _handleDeleteShop(String id) async {
+    await ref.read(shopViewModelProvider.notifier).deleteShop(shopId: id);
   }
 
   void _openCreateShopScreen() {
@@ -96,6 +90,36 @@ class _ShopPageScreenState extends State<ShopPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ShopState>(shopViewModelProvider, (previous, next) {
+      if (next.status == ShopStatus.loaded && next.shops != null) {
+        setState(() {
+          _shops = next.shops!;
+        });
+      }
+      if (next.status == ShopStatus.deleted) {
+        ref.read(shopViewModelProvider.notifier).getAllShopsOfUser();
+      }
+      if (next.status == ShopStatus.created) {
+        ref.read(shopViewModelProvider.notifier).getAllShopsOfUser();
+      }
+      if (next.status == ShopStatus.updated) {
+        ref.read(shopViewModelProvider.notifier).getAllShopsOfUser();
+      }
+    });
+    ref.listen<AddressState>(addressViewModelProvider, (previous, next) {
+      if (next.status == AddressStatus.loaded && next.addresses != null) {
+        setState(() {
+          _addresses = next.addresses!;
+        });
+      }
+    });
+    ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
+      if (next.status == CategoryStatus.loaded && next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      }
+    });
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(

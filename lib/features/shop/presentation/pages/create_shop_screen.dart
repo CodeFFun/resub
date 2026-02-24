@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:resub/features/address/domain/entities/address_entity.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
 import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 import 'package:resub/features/shop/presentation/widgets/shop_form.dart';
 
 class CreateShopScreen extends StatelessWidget {
   final Function(ShopEntity) onShopCreated;
-  final List<String> categories;
-  final List<String> addresses;
+  final List<CategoryEntity> categories;
+  final List<AddressEntity> addresses;
 
   const CreateShopScreen({
     super.key,

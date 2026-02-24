@@ -41,6 +41,8 @@ class ApiEndpoints {
 
   // ============ Category Endpoints ============
   static const String productCategory = '/product-category';
+  static const String shopCategory = '/shop-category';
 
-  
+  // ============ Shop Endpoints ============
+  static const String shop = '/shops';
 }

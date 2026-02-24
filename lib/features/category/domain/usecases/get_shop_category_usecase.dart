@@ -1,0 +1,29 @@
+import 'package:dartz/dartz.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/core/error/failure.dart';
+import 'package:resub/core/usecases/app_usecases.dart';
+import 'package:resub/features/category/data/repositories/category_repository.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
+import 'package:resub/features/category/domain/repositories/category_repository.dart';
+
+final getAllShopCategoriesUsecaseProvider =
+    Provider<GetAllShopCategoriesUsecase>((ref) {
+      final categoryRepository = ref.read(categoryRepositoryProvider);
+      return GetAllShopCategoriesUsecase(
+        categoryRepository: categoryRepository,
+      );
+    });
+
+class GetAllShopCategoriesUsecase
+    implements UsecaseWithoutParms<List<CategoryEntity>> {
+  final ICategoryRepository _categoryRepository;
+
+  GetAllShopCategoriesUsecase({
+    required ICategoryRepository categoryRepository,
+  }) : _categoryRepository = categoryRepository;
+
+  @override
+  Future<Either<Failure, List<CategoryEntity>>> call() {
+    return _categoryRepository.getAllShopCategories();
+  }
+}

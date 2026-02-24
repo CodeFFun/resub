@@ -6,12 +6,14 @@ import 'package:resub/core/api/api_endpoints.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
 import 'package:resub/features/profile/presentation/widgets/media_picker_bottom_sheet.dart';
+import 'package:resub/features/address/domain/entities/address_entity.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
 import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 
 class ShopForm extends StatefulWidget {
   final ShopEntity? initialShop;
-  final List<String> categories;
-  final List<String> addresses;
+  final List<CategoryEntity> categories;
+  final List<AddressEntity> addresses;
   final Function(ShopEntity)? onSubmit;
   final String submitButtonLabel;
   final bool showBackButton;
@@ -33,11 +35,12 @@ class ShopForm extends StatefulWidget {
 class _ShopFormState extends State<ShopForm> {
   late TextEditingController _nameController;
   late TextEditingController _aboutController;
-  late String _selectedCategory;
-  late String _selectedAddress;
+  late TextEditingController _pickupInfoController;
+  String? _selectedCategoryId;
+  String? _selectedAddressId;
   late bool _acceptsSubscription;
   final List<XFile?> _shopImageUrl = [];
-  String? _shopImage;
+  String? _shopBanner;
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePicker();
 
@@ -50,20 +53,24 @@ class _ShopFormState extends State<ShopForm> {
     _aboutController = TextEditingController(
       text: widget.initialShop?.about ?? '',
     );
-    _selectedCategory =
-        widget.initialShop?.category ??
-        (widget.categories.isNotEmpty ? widget.categories[0] : '');
-    _selectedAddress =
-        widget.initialShop?.address ??
-        (widget.addresses.isNotEmpty ? widget.addresses[0] : '');
+    _pickupInfoController = TextEditingController(
+      text: widget.initialShop?.pickupInfo ?? '',
+    );
+    _selectedCategoryId =
+      widget.initialShop?.categoryId ??
+      (widget.categories.isNotEmpty ? widget.categories.first.id : null);
+    _selectedAddressId =
+      widget.initialShop?.addressId ??
+      (widget.addresses.isNotEmpty ? widget.addresses.first.id : null);
     _acceptsSubscription = widget.initialShop?.acceptsSubscription ?? false;
-    _shopImage = widget.initialShop?.image;
+    _shopBanner = widget.initialShop?.shopBanner;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _aboutController.dispose();
+    _pickupInfoController.dispose();
     super.dispose();
   }
 
@@ -129,7 +136,7 @@ class _ShopFormState extends State<ShopForm> {
   void _clearImage() {
     setState(() {
       _shopImageUrl.clear();
-      _shopImage = null;
+      _shopBanner = null;
     });
   }
 
@@ -138,13 +145,15 @@ class _ShopFormState extends State<ShopForm> {
       final shop = ShopEntity(
         id: widget.initialShop?.id,
         name: _nameController.text.trim(),
-        image: _shopImageUrl.isNotEmpty
-            ? _shopImageUrl.first?.path
-            : _shopImage,
+        shopBanner: _shopImageUrl.isEmpty ? _shopBanner : null,
+        shopBannerFile: _shopImageUrl.isNotEmpty
+            ? File(_shopImageUrl.first!.path)
+            : null,
         about: _aboutController.text.trim(),
+        pickupInfo: _pickupInfoController.text.trim(),
         acceptsSubscription: _acceptsSubscription,
-        category: _selectedCategory,
-        address: _selectedAddress,
+        categoryId: _selectedCategoryId,
+        addressId: _selectedAddressId,
       );
       widget.onSubmit?.call(shop);
     }
@@ -152,6 +161,19 @@ class _ShopFormState extends State<ShopForm> {
 
   @override
   Widget build(BuildContext context) {
+    final categoriesWithId =
+      widget.categories.where((category) => category.id != null).toList();
+    final selectedCategoryId =
+      categoriesWithId.any((category) => category.id == _selectedCategoryId)
+        ? _selectedCategoryId
+        : (categoriesWithId.isNotEmpty ? categoriesWithId.first.id : null);
+    final addressesWithId =
+        widget.addresses.where((address) => address.id != null).toList();
+    final selectedAddressId =
+        addressesWithId.any((address) => address.id == _selectedAddressId)
+            ? _selectedAddressId
+            : (addressesWithId.isNotEmpty ? addressesWithId.first.id : null);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -217,7 +239,7 @@ class _ShopFormState extends State<ShopForm> {
                       ],
                     ),
                   )
-                else if (_shopImage != null && _shopImage!.isNotEmpty)
+                else if (_shopBanner != null && _shopBanner!.isNotEmpty)
                   GestureDetector(
                     onTap: _showMediaPicker,
                     child: Stack(
@@ -225,7 +247,7 @@ class _ShopFormState extends State<ShopForm> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
-                            '${ApiEndpoints.baseUrl}/$_shopImage',
+                            '${ApiEndpoints.baseUrl}/$_shopBanner',
                             width: 150,
                             height: 150,
                             fit: BoxFit.cover,
@@ -294,7 +316,6 @@ class _ShopFormState extends State<ShopForm> {
                   controller: _nameController,
                   labelText: 'Shop Name',
                   icon: const Icon(Icons.store_outlined),
-                 
                 ),
                 const SizedBox(height: 15),
 
@@ -303,7 +324,14 @@ class _ShopFormState extends State<ShopForm> {
                   controller: _aboutController,
                   labelText: 'About',
                   icon: const Icon(Icons.info_outlined),
-                  
+                ),
+                const SizedBox(height: 15),
+
+                // Pickup Info
+                MyInputFormField(
+                  controller: _pickupInfoController,
+                  labelText: 'Pickup Info',
+                  icon: const Icon(Icons.local_shipping_outlined),
                 ),
                 const SizedBox(height: 15),
 
@@ -317,20 +345,24 @@ class _ShopFormState extends State<ShopForm> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: DropdownButton<String>(
-                    value: _selectedCategory,
+                    value: selectedCategoryId,
                     isExpanded: true,
                     underline: const SizedBox(),
                     icon: const Icon(Icons.arrow_drop_down),
-                    items: widget.categories.map((String category) {
+                    items: categoriesWithId.map((category) {
                       return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
+                        value: category.id!,
+                        child: Text(
+                          category.name?.trim().isNotEmpty == true
+                              ? category.name!
+                              : 'Unnamed Category',
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         setState(() {
-                          _selectedCategory = newValue;
+                          _selectedCategoryId = newValue;
                         });
                       }
                     },
@@ -348,20 +380,26 @@ class _ShopFormState extends State<ShopForm> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: DropdownButton<String>(
-                    value: _selectedAddress,
+                    value: selectedAddressId,
                     isExpanded: true,
                     underline: const SizedBox(),
                     icon: const Icon(Icons.arrow_drop_down),
-                    items: widget.addresses.map((String address) {
+                    items: addressesWithId.map((address) {
+                      final labelParts = [address.label, address.line1]
+                          .where((part) => part != null && part.isNotEmpty)
+                          .join(' - ');
                       return DropdownMenuItem<String>(
-                        value: address,
-                        child: Text(address, overflow: TextOverflow.ellipsis),
+                        value: address.id!,
+                        child: Text(
+                          labelParts.isNotEmpty ? labelParts : 'Unnamed Address',
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         setState(() {
-                          _selectedAddress = newValue;
+                          _selectedAddressId = newValue;
                         });
                       }
                     },
@@ -380,7 +418,7 @@ class _ShopFormState extends State<ShopForm> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         spreadRadius: 1,
                         blurRadius: 4,
                         offset: const Offset(0, 2),

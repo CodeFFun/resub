@@ -124,4 +124,19 @@ class CategoryRemoteDatasource implements ICategoryRemoteDatasource {
       throw Exception('Failed to update category');
     }
   }
+
+  @override
+  Future<List<CategoryApiModel>> getAllShopCategories() async {
+    final token = await _tokenService.getToken();
+    final response = await _apiClient.get(
+      ApiEndpoints.shopCategory,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    if (response.data['success'] == true) {
+      final List<dynamic> data = response.data['data'];
+      return data.map((json) => CategoryApiModel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to get shop categories');
+    }
+  }
 }

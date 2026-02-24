@@ -5,6 +5,7 @@ import 'package:resub/features/category/domain/usecases/delete_category_usecase.
 import 'package:resub/features/category/domain/usecases/get_categories_by_shop_usecase.dart';
 import 'package:resub/features/category/domain/usecases/get_categories_usecase.dart';
 import 'package:resub/features/category/domain/usecases/get_category_by_id_usecase.dart';
+import 'package:resub/features/category/domain/usecases/get_shop_category_usecase.dart';
 import 'package:resub/features/category/domain/usecases/update_category_usecase.dart';
 import 'package:resub/features/category/presentation/state/category_state.dart';
 
@@ -21,6 +22,7 @@ class CategoryViewModel extends Notifier<CategoryState> {
   late final GetProductCategoriesByShopIdUsecase
   _getProductCategoriesByShopIdUsecase;
   late final UpdateProductCategoryUsecase _updateProductCategoryUsecase;
+  late final GetAllShopCategoriesUsecase _getAllShopCategoriesUsecase;
 
   @override
   build() {
@@ -41,6 +43,9 @@ class CategoryViewModel extends Notifier<CategoryState> {
     );
     _updateProductCategoryUsecase = ref.read(
       updateProductCategoryUsecaseProvider,
+    );
+    _getAllShopCategoriesUsecase = ref.read(
+      getAllShopCategoriesUsecaseProvider,
     );
     return const CategoryState();
   }
@@ -186,6 +191,25 @@ class CategoryViewModel extends Notifier<CategoryState> {
             errorMessage: 'Category deletion failed',
           );
         }
+      },
+    );
+  }
+
+  Future<void> getAllShopCategories() async {
+    state = state.copyWith(status: CategoryStatus.loading);
+    final result = await _getAllShopCategoriesUsecase();
+    result.fold(
+      (failure) {
+        state = state.copyWith(
+          status: CategoryStatus.error,
+          errorMessage: failure.message,
+        );
+      },
+      (categories) {
+        state = state.copyWith(
+          status: CategoryStatus.loaded,
+          categories: categories,
+        );
       },
     );
   }

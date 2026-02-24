@@ -16,8 +16,18 @@ class ShopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Build address display from label and line1
+    final addressParts = <String>[];
+    if (shop.addressLabel != null && shop.addressLabel!.isNotEmpty) {
+      addressParts.add(shop.addressLabel!);
+    }
+    if (shop.addressLine1 != null && shop.addressLine1!.isNotEmpty) {
+      addressParts.add(shop.addressLine1!);
+    }
+    final addressDisplay = addressParts.join(' - ');
+
     return Dismissible(
-      key: Key(shop.id ?? shop.name),
+      key: Key(shop.id ?? shop.name ?? 'unknown'),
       onDismissed: (direction) {
         onDelete();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -44,7 +54,7 @@ class ShopCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -65,9 +75,9 @@ class ShopCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.grey.shade200,
               ),
-              child: shop.image != null && shop.image!.isNotEmpty
+              child: shop.shopBanner != null && shop.shopBanner!.isNotEmpty
                   ? Image.network(
-                      '${ApiEndpoints.baseUrl}/${shop.image}',
+                      '${ApiEndpoints.baseUrl}${shop.shopBanner}',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Icon(
@@ -84,7 +94,7 @@ class ShopCard extends StatelessWidget {
             ),
           ),
           title: Text(
-            shop.name,
+            shop.name ?? 'Unnamed Shop',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -96,12 +106,12 @@ class ShopCard extends StatelessWidget {
             children: [
               const SizedBox(height: 4),
               Text(
-                shop.category,
+                shop.categoryName ?? 'No Category',
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
               ),
               const SizedBox(height: 4),
               Text(
-                shop.address,
+                addressDisplay.isNotEmpty ? addressDisplay : 'No Address',
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

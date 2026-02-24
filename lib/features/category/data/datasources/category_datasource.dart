@@ -6,6 +6,7 @@ abstract interface class ICategoryRemoteDatasource {
   );
   Future<CategoryApiModel?> getProductCategoryById(String id);
   Future<List<CategoryApiModel>> getAllProductCategories();
+  Future<List<CategoryApiModel>> getAllShopCategories();
   Future<List<CategoryApiModel>> getAllProductCategoriesByShopId(String shopId);
   Future<CategoryApiModel?> updateProductCategory(
     String id,

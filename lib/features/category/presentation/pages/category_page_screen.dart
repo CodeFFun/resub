@@ -17,7 +17,7 @@ class CategoryPageScreen extends ConsumerStatefulWidget {
 
 class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
   late List<CategoryEntity> _categories = [];
-  late List<String> _shops = [];
+  late final List<String> _shops = [];
 
   @override
   void initState() {

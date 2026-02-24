@@ -8,6 +8,7 @@ abstract interface class ICategoryRepository {
   );
   Future<Either<Failure, CategoryEntity?>> getProductCategoryById(String id);
   Future<Either<Failure, List<CategoryEntity>>> getAllProductCategories();
+  Future<Either<Failure, List<CategoryEntity>>> getAllShopCategories();
   Future<Either<Failure, List<CategoryEntity>>> getAllProductCategoriesByShopId(
     String shopId,
   );

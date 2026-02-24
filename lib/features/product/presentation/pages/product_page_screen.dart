@@ -181,7 +181,7 @@ class _ProductPageScreenState extends State<ProductPageScreen> {
                       value: shop,
                       child: Text(shop),
                     );
-                  }).toList(),
+                  }),
                 ],
                 onChanged: (String? newValue) {
                   if (newValue != null) {

@@ -133,4 +133,18 @@ class CategoryRepository implements ICategoryRepository {
       return const Left(ApiFailure(message: 'No internet connection'));
     }
   }
+
+  @override
+  Future<Either<Failure, List<CategoryEntity>>> getAllShopCategories() async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final models = await _categoryRemoteDatasource.getAllShopCategories();
+        return Right(models.map((model) => model.toEntity()).toList());
+      } catch (e) {
+        return Left(ApiFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(ApiFailure(message: 'No internet connection'));
+    }
+  }
 }
