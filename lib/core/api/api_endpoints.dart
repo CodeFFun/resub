@@ -45,4 +45,7 @@ class ApiEndpoints {
 
   // ============ Shop Endpoints ============
   static const String shop = '/shops';
+
+  // ============ Product Endpoints ============
+  static const String product = '/product';
 }

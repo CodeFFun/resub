@@ -1,113 +1,123 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/routes/app_routes.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
+import 'package:resub/features/category/presentation/state/category_state.dart';
+import 'package:resub/features/category/presentation/view_models/category_view_model.dart';
 import 'package:resub/features/product/domain/entities/product_entity.dart';
 import 'package:resub/features/product/presentation/pages/create_product_screen.dart';
 import 'package:resub/features/product/presentation/pages/update_product_screen.dart';
+import 'package:resub/features/product/presentation/state/product_state.dart';
+import 'package:resub/features/product/presentation/view_models/product_view_model.dart';
 import 'package:resub/features/product/presentation/widgets/product_card.dart';
+import 'package:resub/features/shop/domain/entities/shop_entity.dart';
+import 'package:resub/features/shop/presentation/state/shop_state.dart';
+import 'package:resub/features/shop/presentation/view_models/shop_view_model.dart';
 
-class ProductPageScreen extends StatefulWidget {
+class ProductPageScreen extends ConsumerStatefulWidget {
   const ProductPageScreen({super.key});
 
   @override
-  State<ProductPageScreen> createState() => _ProductPageScreenState();
+  ConsumerState<ProductPageScreen> createState() => _ProductPageScreenState();
 }
 
-class _ProductPageScreenState extends State<ProductPageScreen> {
-  late List<ProductEntity> _products;
-  late List<String> _shops;
-  late List<String> _categories;
-  late String _selectedShopFilter;
+class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
+  late List<ProductEntity> _products = [];
+  late List<ShopEntity> _shops = [];
+  late List<CategoryEntity> _categories = [];
+  late String _selectedShopFilter = 'All Shops';
 
   @override
   void initState() {
     super.initState();
-    // Initialize with dummy shops and categories
-    _shops = ['Fresh Bakery', 'Tech Store', 'Fashion Hub', 'Book World'];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadShopData();
+      _loadProductData();
+      _loadCategoryData();
+    });
+  }
 
-    _categories = ['Food & Bakery', 'Electronics', 'Clothing', 'Books'];
+  Future<void> _loadShopData() async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+    if (userId != null) {
+      await ref.read(shopViewModelProvider.notifier).getAllShopsOfUser();
+    }
+  }
 
-    // Initialize with dummy products
-    _products = [
-      const ProductEntity(
-        id: '1',
-        name: 'Croissant',
-        description: 'Fresh butter croissant',
-        basePrice: 150,
-        stockQuantity: 50,
-        discount: 10,
-        shopIds: ['0'], // Fresh Bakery
-        categoryId: '0', // Food & Bakery
-      ),
-      const ProductEntity(
-        id: '2',
-        name: 'Bread Loaf',
-        description: 'Whole wheat bread loaf',
-        basePrice: 100,
-        stockQuantity: 30,
-        discount: 5,
-        shopIds: ['0'], // Fresh Bakery
-        categoryId: '0', // Food & Bakery
-      ),
-      const ProductEntity(
-        id: '3',
-        name: 'Laptop',
-        description: 'High performance laptop',
-        basePrice: 50000,
-        stockQuantity: 5,
-        discount: 15,
-        shopIds: ['1'], // Tech Store
-        categoryId: '1', // Electronics
-      ),
-    ];
+  Future<void> _loadProductData() async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+    if (userId != null) {
+      if (_selectedShopFilter != 'All Shops') {
+        await ref
+            .read(productViewModelProvider.notifier)
+            .getProductsByShopId(shopId: _selectedShopFilter);
+      }
+    }
+  }
 
-    _selectedShopFilter = 'All Shops';
+  Future<void> _loadCategoryData({String? shopId}) async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+    if (userId != null) {
+      final resolvedShopId =
+          shopId ??
+          (_selectedShopFilter != 'All Shops'
+              ? _selectedShopFilter
+              : (_shops.isNotEmpty ? _shops.first.id : null));
+      if (resolvedShopId == null || resolvedShopId.isEmpty) {
+        return;
+      }
+      await ref
+          .read(categoryViewModelProvider.notifier)
+          .getCategoriesByShopId(shopId: resolvedShopId);
+    }
   }
 
   List<ProductEntity> _getFilteredProducts() {
     if (_selectedShopFilter == 'All Shops') {
       return _products;
     }
-    final shopIndex = _shops.indexOf(_selectedShopFilter);
-    return _products
-        .where((product) => product.shopIds.contains(shopIndex.toString()))
-        .toList();
+    return _products.where((product) {
+      if (product.shopId != null) {
+        return product.shopId == _selectedShopFilter;
+      }
+      return product.shopIds.contains(_selectedShopFilter);
+    }).toList();
   }
 
   String _getCategoryName(String categoryId) {
-    int index = int.tryParse(categoryId) ?? 0;
-    if (index >= 0 && index < _categories.length) {
-      return _categories[index];
+    final match = _categories.where((category) => category.id == categoryId);
+    if (match.isNotEmpty) {
+      return match.first.name ?? 'Unknown';
     }
     return 'Unknown';
   }
 
-  void _handleAddProduct(ProductEntity product) {
-    setState(() {
-      _products.add(
-        product.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()),
-      );
-    });
+  void _handleAddProduct(ProductEntity product) async {
+    await ref
+        .read(productViewModelProvider.notifier)
+        .createProduct(shopId: product.shopId ?? '', productEntity: product);
     if (mounted) {
       Navigator.pop(context);
     }
   }
 
-  void _handleUpdateProduct(ProductEntity product) {
-    setState(() {
-      final index = _products.indexWhere((p) => p.id == product.id);
-      if (index != -1) {
-        _products[index] = product;
-      }
-    });
+  void _handleUpdateProduct(ProductEntity product) async {
+    await ref
+        .read(productViewModelProvider.notifier)
+        .updateProduct(productId: product.id ?? '', productEntity: product);
     if (mounted) {
       Navigator.pop(context);
     }
   }
 
-  void _handleDeleteProduct(String id) {
-    setState(() {
-      _products.removeWhere((product) => product.id == id);
-    });
+  void _handleDeleteProduct(String id) async {
+    await ref
+        .read(productViewModelProvider.notifier)
+        .deleteProduct(productId: id);
   }
 
   void _openCreateProductScreen() {
@@ -135,6 +145,44 @@ class _ProductPageScreenState extends State<ProductPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ProductState>(productViewModelProvider, (previous, next) {
+      if (next.status == ProductStatus.loaded && next.products != null) {
+        setState(() {
+          _products = next.products!;
+        });
+      }
+      if (next.status == ProductStatus.created) {
+        ref
+            .read(productViewModelProvider.notifier)
+            .getProductsByShopId(shopId: _selectedShopFilter);
+      }
+      if (next.status == ProductStatus.deleted) {
+        ref
+            .read(productViewModelProvider.notifier)
+            .getProductsByShopId(shopId: _selectedShopFilter);
+      }
+      if (next.status == ProductStatus.updated) {
+        ref
+            .read(productViewModelProvider.notifier)
+            .getProductsByShopId(shopId: _selectedShopFilter);
+      }
+    });
+    ref.listen<ShopState>(shopViewModelProvider, (previous, next) {
+      if (next.status == ShopStatus.loaded && next.shops != null) {
+        setState(() {
+          _shops = next.shops!;
+        });
+        _loadCategoryData();
+      }
+    });
+    ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
+      if (next.status == CategoryStatus.loaded && next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      }
+    });
+
     final filteredProducts = _getFilteredProducts();
 
     return Scaffold(
@@ -176,10 +224,10 @@ class _ProductPageScreenState extends State<ProductPageScreen> {
                     value: 'All Shops',
                     child: Text('All Shops'),
                   ),
-                  ..._shops.map((String shop) {
+                  ..._shops.map((shop) {
                     return DropdownMenuItem<String>(
-                      value: shop,
-                      child: Text(shop),
+                      value: shop.id,
+                      child: Text(shop.name ?? 'Unnamed shop'),
                     );
                   }),
                 ],
@@ -188,6 +236,12 @@ class _ProductPageScreenState extends State<ProductPageScreen> {
                     setState(() {
                       _selectedShopFilter = newValue;
                     });
+                    if (newValue != 'All Shops') {
+                      ref
+                          .read(productViewModelProvider.notifier)
+                          .getProductsByShopId(shopId: newValue);
+                    }
+                    _loadCategoryData(shopId: newValue);
                   }
                 },
               ),

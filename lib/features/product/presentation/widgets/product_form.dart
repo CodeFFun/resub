@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
 import 'package:resub/features/product/domain/entities/product_entity.dart';
+import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 
 class ProductForm extends StatefulWidget {
   final ProductEntity? initialProduct;
-  final List<String> shops;
-  final List<String> categories;
+  final List<ShopEntity> shops;
+  final List<CategoryEntity> categories;
   final Function(ProductEntity)? onSubmit;
   final String submitButtonLabel;
   final bool showBackButton;
@@ -31,8 +33,8 @@ class _ProductFormState extends State<ProductForm> {
   late TextEditingController _basePriceController;
   late TextEditingController _stockQuantityController;
   late TextEditingController _discountController;
-  late List<bool> _selectedShops;
-  late String _selectedCategory;
+  late String _selectedShopId;
+  late String _selectedCategoryId;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -54,20 +56,23 @@ class _ProductFormState extends State<ProductForm> {
       text: widget.initialProduct?.discount.toString() ?? '0',
     );
 
-    // Initialize selected shops
-    _selectedShops = List<bool>.filled(widget.shops.length, false);
+    // Initialize selected shop
+    _selectedShopId = '';
     if (widget.initialProduct != null) {
-      for (int i = 0; i < widget.shops.length; i++) {
-        if (widget.initialProduct!.shopIds.contains(i.toString())) {
-          _selectedShops[i] = true;
-        }
+      if (widget.initialProduct!.shopId != null) {
+        _selectedShopId = widget.initialProduct!.shopId!;
+      } else if (widget.initialProduct!.shopIds.isNotEmpty) {
+        _selectedShopId = widget.initialProduct!.shopIds.first;
       }
+    }
+    if (_selectedShopId.isEmpty && widget.shops.isNotEmpty) {
+      _selectedShopId = widget.shops.first.id ?? '';
     }
 
     // Initialize selected category
-    _selectedCategory =
+    _selectedCategoryId =
         widget.initialProduct?.categoryId ??
-        (widget.categories.isNotEmpty ? '0' : '');
+        (widget.categories.isNotEmpty ? widget.categories.first.id ?? '' : '');
   }
 
   @override
@@ -82,20 +87,21 @@ class _ProductFormState extends State<ProductForm> {
 
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
-      // Get selected shop ids
-      List<String> selectedShopIds = [];
-      for (int i = 0; i < _selectedShops.length; i++) {
-        if (_selectedShops[i]) {
-          selectedShopIds.add(i.toString());
-        }
+      if (_selectedShopId.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Please select a shop')));
+        return;
       }
 
-      if (selectedShopIds.isEmpty) {
+      if (_selectedCategoryId.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select at least one shop')),
+          const SnackBar(content: Text('Please select a category')),
         );
         return;
       }
+
+      final resolvedCategoryIds = <String>[_selectedCategoryId];
 
       final product = ProductEntity(
         id: widget.initialProduct?.id,
@@ -104,8 +110,10 @@ class _ProductFormState extends State<ProductForm> {
         basePrice: double.parse(_basePriceController.text.trim()),
         stockQuantity: int.parse(_stockQuantityController.text.trim()),
         discount: double.parse(_discountController.text.trim()),
-        shopIds: selectedShopIds,
-        categoryId: _selectedCategory,
+        shopIds: [_selectedShopId],
+        categoryId: _selectedCategoryId,
+        shopId: _selectedShopId,
+        categoryIds: resolvedCategoryIds,
       );
       widget.onSubmit?.call(product);
     }
@@ -203,7 +211,7 @@ class _ProductFormState extends State<ProductForm> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha:0.1),
                         spreadRadius: 1,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -218,15 +226,15 @@ class _ProductFormState extends State<ProductForm> {
                           bottom: index < widget.categories.length - 1 ? 8 : 0,
                         ),
                         child: RadioListTile<String>(
-                          value: index.toString(),
-                          groupValue: _selectedCategory,
+                          value: widget.categories[index].id ?? '',
+                          groupValue: _selectedCategoryId,
                           onChanged: (String? value) {
                             setState(() {
-                              _selectedCategory = value ?? '';
+                              _selectedCategoryId = value ?? '';
                             });
                           },
                           title: Text(
-                            widget.categories[index],
+                            widget.categories[index].name ?? 'Unnamed category',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black87,
@@ -241,9 +249,8 @@ class _ProductFormState extends State<ProductForm> {
                 ),
                 const SizedBox(height: 25),
 
-                // Shops (Checkboxes - multiple select)
                 Text(
-                  'Select Shops',
+                  'Select Shop',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -258,7 +265,7 @@ class _ProductFormState extends State<ProductForm> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         spreadRadius: 1,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -272,21 +279,21 @@ class _ProductFormState extends State<ProductForm> {
                         padding: EdgeInsets.only(
                           bottom: index < widget.shops.length - 1 ? 8 : 0,
                         ),
-                        child: CheckboxListTile(
-                          value: _selectedShops[index],
-                          onChanged: (bool? value) {
+                        child: RadioListTile<String>(
+                          value: widget.shops[index].id ?? '',
+                          groupValue: _selectedShopId,
+                          onChanged: (String? value) {
                             setState(() {
-                              _selectedShops[index] = value ?? false;
+                              _selectedShopId = value ?? '';
                             });
                           },
                           title: Text(
-                            widget.shops[index],
+                            widget.shops[index].name ?? 'Unnamed shop',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black87,
                             ),
                           ),
-                          controlAffinity: ListTileControlAffinity.leading,
                           contentPadding: EdgeInsets.zero,
                           activeColor: const Color(0xFF92400E),
                         ),
@@ -295,7 +302,6 @@ class _ProductFormState extends State<ProductForm> {
                   ),
                 ),
                 const SizedBox(height: 30),
-
                 // Buttons
                 SizedBox(
                   width: double.infinity,

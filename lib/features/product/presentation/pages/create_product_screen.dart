@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
 import 'package:resub/features/product/domain/entities/product_entity.dart';
 import 'package:resub/features/product/presentation/widgets/product_form.dart';
+import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 
 class CreateProductScreen extends StatelessWidget {
   final Function(ProductEntity) onProductCreated;
-  final List<String> shops;
-  final List<String> categories;
+  final List<ShopEntity> shops;
+  final List<CategoryEntity> categories;
 
   const CreateProductScreen({
     super.key,
