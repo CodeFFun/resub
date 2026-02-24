@@ -35,4 +35,17 @@ class ApiEndpoints {
   static const String updateProfile = '/auth/update';
   static const String updateUserByEmail = '/auth/update-by-email';
   static const String getUser = '/auth/users';
+
+  // ============ Address Endpoints ============
+  static const String address = '/address';
+
+  // ============ Category Endpoints ============
+  static const String productCategory = '/product-category';
+  static const String shopCategory = '/shop-category';
+
+  // ============ Shop Endpoints ============
+  static const String shop = '/shops';
+
+  // ============ Product Endpoints ============
+  static const String product = '/product';
 }

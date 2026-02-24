@@ -54,15 +54,15 @@ class MyInputFormField extends StatelessWidget {
         }
 
         // Password validation
-        if (labelText.toLowerCase() == "password") {
-          final passwordRegex = RegExp(
-            r'^(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$',
-          );
+        // if (labelText.toLowerCase() == "password") {
+        //   final passwordRegex = RegExp(
+        //     r'^(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$',
+        //   );
 
-          if (!passwordRegex.hasMatch(value)) {
-            return "Password must have 6 letters,number and special character";
-          }
-        }
+        //   if (!passwordRegex.hasMatch(value)) {
+        //     return "Password must have 6 letters,number and special character";
+        //   }
+        // }
 
         return null;
       },
