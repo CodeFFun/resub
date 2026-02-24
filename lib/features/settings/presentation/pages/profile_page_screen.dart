@@ -65,8 +65,10 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
   Widget build(BuildContext context) {
     ref.listen<ProfileState>(profileViewModelProvider, (previous, next) {
       if (next.status == ProfileStatus.loaded && next.user != null) {
-        _profilePicture = next.user!.profilePicture;
-        _userName = next.user!.userName ?? '';
+        setState(() {
+          _profilePicture = next.user!.profilePicture;
+          _userName = next.user!.userName ?? '';
+        });
       }
     });
 

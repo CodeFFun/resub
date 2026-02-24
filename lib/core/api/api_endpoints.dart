@@ -35,4 +35,7 @@ class ApiEndpoints {
   static const String updateProfile = '/auth/update';
   static const String updateUserByEmail = '/auth/update-by-email';
   static const String getUser = '/auth/users';
+
+  // ============ Address Endpoints ============
+  static const String address = '/address';
 }

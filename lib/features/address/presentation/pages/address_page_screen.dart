@@ -1,63 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/routes/app_routes.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/address/domain/entities/address_entity.dart';
 import 'package:resub/features/address/presentation/pages/create_adress_screen.dart';
 import 'package:resub/features/address/presentation/pages/update_address_screen.dart';
+import 'package:resub/features/address/presentation/state/address_state.dart';
+import 'package:resub/features/address/presentation/view_models/address_view_model.dart';
 import 'package:resub/features/address/presentation/widgets/address_card.dart';
 
-class AddressPageScreen extends StatefulWidget {
+class AddressPageScreen extends ConsumerStatefulWidget {
   const AddressPageScreen({super.key});
 
   @override
-  State<AddressPageScreen> createState() => _AddressPageScreenState();
+  ConsumerState<AddressPageScreen> createState() => _AddressPageScreenState();
 }
 
-class _AddressPageScreenState extends State<AddressPageScreen> {
-  late List<AddressEntity> _addresses;
+class _AddressPageScreenState extends ConsumerState<AddressPageScreen> {
+  late List<AddressEntity> _addresses = [];
 
   @override
   void initState() {
     super.initState();
-    // Initialize with dummy data
-    _addresses = [
-      const AddressEntity(
-        id: '1',
-        label: 'Home',
-        line1: '123 Main Street, Apartment 4B',
-        city: 'San Francisco',
-        state: 'California',
-        country: 'United States',
-      ),
-    ];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
   }
 
-  void _handleAddAddress(AddressEntity address) {
-    setState(() {
-      _addresses.add(
-        address.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()),
-      );
-    });
+  void _loadUserData() async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+
+    if (userId != null) {
+      await ref.read(addressViewModelProvider.notifier).getAddressesOfUser();
+    }
+  }
+
+  void _handleAddAddress(AddressEntity address) async {
+    await ref
+        .read(addressViewModelProvider.notifier)
+        .createAddress(addressEntity: address);
     if (mounted) {
       Navigator.pop(context);
     }
   }
 
-  void _handleUpdateAddress(AddressEntity address) {
-    setState(() {
-      final index = _addresses.indexWhere((addr) => addr.id == address.id);
-      if (index != -1) {
-        _addresses[index] = address;
-      }
-    });
+  void _handleUpdateAddress(AddressEntity address) async {
+    await ref
+        .read(addressViewModelProvider.notifier)
+        .updateAddress(addressEntity: address, addressId: address.id!);
     if (mounted) {
       Navigator.pop(context);
     }
   }
 
-  void _handleDeleteAddress(String id) {
-    setState(() {
-      _addresses.removeWhere((addr) => addr.id == id);
-    });
+  void _handleDeleteAddress(String id) async {
+    await ref
+        .read(addressViewModelProvider.notifier)
+        .deleteAddress(addressId: id);
   }
 
   void _openCreateAddressScreen() {
@@ -79,6 +79,22 @@ class _AddressPageScreenState extends State<AddressPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AddressState>(addressViewModelProvider, (previous, next) {
+      if (next.status == AddressStatus.created) {
+        ref.read(addressViewModelProvider.notifier).getAddressesOfUser();
+      }
+      if (next.status == AddressStatus.deleted) {
+        ref.read(addressViewModelProvider.notifier).getAddressesOfUser();
+      }
+      if (next.status == AddressStatus.updated) {
+        ref.read(addressViewModelProvider.notifier).getAddressesOfUser();
+      }
+      if (next.status == AddressStatus.loaded && next.addresses != null) {
+        setState(() {
+          _addresses = next.addresses!;
+        });
+      }
+    });
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(

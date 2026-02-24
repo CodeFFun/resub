@@ -60,14 +60,31 @@ class _AddressFormState extends State<AddressForm> {
   }
 
   void _handleSubmit() {
+    final label = _labelController.text.trim();
+    final line1 = _line1Controller.text.trim();
+    final city = _cityController.text.trim();
+    final state = _stateController.text.trim();
+    final country = _countryController.text.trim();
+
+    if (label.isEmpty ||
+        line1.isEmpty ||
+        city.isEmpty ||
+        state.isEmpty ||
+        country.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields.')),
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
       final address = AddressEntity(
         id: widget.initialAddress?.id,
-        label: _labelController.text.trim(),
-        line1: _line1Controller.text.trim(),
-        city: _cityController.text.trim(),
-        state: _stateController.text.trim(),
-        country: _countryController.text.trim(),
+        label: label,
+        line1: line1,
+        city: city,
+        state: state,
+        country: country,
       );
       widget.onSubmit?.call(address);
     }
@@ -104,35 +121,30 @@ class _AddressFormState extends State<AddressForm> {
                   controller: _labelController,
                   labelText: 'Label',
                   icon: const Icon(Icons.label_outline),
-                 
                 ),
                 const SizedBox(height: 15),
                 MyInputFormField(
                   controller: _line1Controller,
                   labelText: 'Address Line 1',
                   icon: const Icon(Icons.home_outlined),
-                  
                 ),
                 const SizedBox(height: 15),
                 MyInputFormField(
                   controller: _cityController,
                   labelText: 'City',
                   icon: const Icon(Icons.location_city_outlined),
-                 
                 ),
                 const SizedBox(height: 15),
                 MyInputFormField(
                   controller: _stateController,
                   labelText: 'State',
                   icon: const Icon(Icons.location_on_outlined),
-                  
                 ),
                 const SizedBox(height: 15),
                 MyInputFormField(
                   controller: _countryController,
                   labelText: 'Country',
                   icon: const Icon(Icons.public_outlined),
-                  
                 ),
                 const SizedBox(height: 30),
                 SizedBox(

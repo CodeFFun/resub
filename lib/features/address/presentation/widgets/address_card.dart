@@ -16,7 +16,7 @@ class AddressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: Key(address.id ?? address.label),
+      key: Key(address.id ?? address.label!),
       onDismissed: (direction) {
         onDelete();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -43,7 +43,7 @@ class AddressCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -67,7 +67,7 @@ class AddressCard extends StatelessWidget {
             ),
           ),
           title: Text(
-            address.label,
+            address.label!,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -79,7 +79,7 @@ class AddressCard extends StatelessWidget {
             children: [
               const SizedBox(height: 6),
               Text(
-                address.line1,
+                address.line1!,
                 style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
               ),
               const SizedBox(height: 4),
