@@ -1,36 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/routes/app_routes.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
 import 'package:resub/features/category/presentation/pages/create_category_screen.dart';
 import 'package:resub/features/category/presentation/pages/update_category_screen.dart';
+import 'package:resub/features/category/presentation/state/category_state.dart';
+import 'package:resub/features/category/presentation/view_models/category_view_model.dart';
 import 'package:resub/features/category/presentation/widgets/category_card.dart';
 
-class CategoryPageScreen extends StatefulWidget {
+class CategoryPageScreen extends ConsumerStatefulWidget {
   const CategoryPageScreen({super.key});
 
   @override
-  State<CategoryPageScreen> createState() => _CategoryPageScreenState();
+  ConsumerState<CategoryPageScreen> createState() => _CategoryPageScreenState();
 }
 
-class _CategoryPageScreenState extends State<CategoryPageScreen> {
-  late List<CategoryEntity> _categories;
-  late List<String> _shops;
+class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
+  late List<CategoryEntity> _categories = [];
+  late List<String> _shops = [];
 
   @override
   void initState() {
     super.initState();
-    // Initialize with dummy shops
-    _shops = ['Fresh Bakery', 'Tech Store', 'Fashion Hub', 'Book World'];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
+  }
 
-    // Initialize with dummy data
-    _categories = [
-      const CategoryEntity(
-        id: '1',
-        name: 'Food & Bakery',
-        description: 'All food and bakery related items',
-        shopIds: ['0'], // Fresh Bakery
-      ),
-    ];
+  void _loadUserData() async {
+    await ref.read(categoryViewModelProvider.notifier).getAllCategories();
   }
 
   void _handleAddCategory(CategoryEntity category) {
@@ -85,6 +83,13 @@ class _CategoryPageScreenState extends State<CategoryPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
+      if (next.status == CategoryStatus.loaded) {
+        setState(() {
+          _categories = next.categories ?? [];
+        });
+      }
+    });
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(

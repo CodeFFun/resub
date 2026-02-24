@@ -16,23 +16,22 @@ class CategoryCard extends StatelessWidget {
   });
 
   String _getShopsDisplay() {
-    if (category.shopIds.isEmpty) {
+    if (category.shopName != null && category.shopName!.isNotEmpty) {
+      return category.shopName!;
+    }
+    if (category.shopId == null || category.shopId!.isEmpty) {
       return 'No shops';
     }
-    // Get shop names - in this simple implementation using indices
-    List<String> selectedShops = [];
-    for (int i = 0; i < allShops.length; i++) {
-      if (category.shopIds.contains(i.toString())) {
-        selectedShops.add(allShops[i]);
-      }
+    if (allShops.contains(category.shopId)) {
+      return category.shopId!;
     }
-    return selectedShops.isNotEmpty ? selectedShops.join(', ') : 'No shops';
+    return 'No shops';
   }
 
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: Key(category.id ?? category.name),
+      key: Key(category.id ?? category.name!),
       onDismissed: (direction) {
         onDelete();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -59,7 +58,7 @@ class CategoryCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -83,7 +82,7 @@ class CategoryCard extends StatelessWidget {
             ),
           ),
           title: Text(
-            category.name,
+            category.name!,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -95,7 +94,7 @@ class CategoryCard extends StatelessWidget {
             children: [
               const SizedBox(height: 6),
               Text(
-                category.description,
+                category.description!,
                 style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

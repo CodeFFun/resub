@@ -38,4 +38,9 @@ class ApiEndpoints {
 
   // ============ Address Endpoints ============
   static const String address = '/address';
+
+  // ============ Category Endpoints ============
+  static const String productCategory = '/product-category';
+
+  
 }

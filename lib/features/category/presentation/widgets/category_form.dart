@@ -43,7 +43,9 @@ class _CategoryFormState extends State<CategoryForm> {
     _selectedShops = List<bool>.filled(widget.shops.length, false);
     if (widget.initialCategory != null) {
       for (int i = 0; i < widget.shops.length; i++) {
-        if (widget.initialCategory!.shopIds.contains(i.toString())) {
+        final shopValue = widget.shops[i];
+        if (widget.initialCategory!.shopId == shopValue ||
+            widget.initialCategory!.shopName == shopValue) {
           _selectedShops[i] = true;
         }
       }
@@ -59,11 +61,11 @@ class _CategoryFormState extends State<CategoryForm> {
 
   void _handleSubmit() {
     if (_formKey.currentState!.validate()) {
-      // Get selected shop ids
-      List<String> selectedShopIds = [];
+      String? selectedShopId;
       for (int i = 0; i < _selectedShops.length; i++) {
         if (_selectedShops[i]) {
-          selectedShopIds.add(i.toString());
+          selectedShopId = widget.shops[i];
+          break;
         }
       }
 
@@ -71,7 +73,7 @@ class _CategoryFormState extends State<CategoryForm> {
         id: widget.initialCategory?.id,
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
-        shopIds: selectedShopIds,
+        shopId: selectedShopId,
       );
       widget.onSubmit?.call(category);
     }
