@@ -6,6 +6,7 @@ import 'package:resub/features/category/presentation/state/category_state.dart';
 import 'package:resub/features/category/presentation/view_models/category_view_model.dart';
 import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 import 'package:resub/features/shop/presentation/pages/customer/shop_list_screen.dart';
+import 'package:resub/features/shop/presentation/pages/customer/shop_details_screen.dart';
 import 'package:resub/features/shop/presentation/state/shop_state.dart';
 import 'package:resub/features/shop/presentation/view_models/shop_view_model.dart';
 import '../widgets/category_card.dart';
@@ -65,7 +66,6 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
     {'name': 'Alcohol', 'icon': '🍺'},
   ];
 
-  // Computed property for subscription shops
   List<ShopEntity> get subscriptionShops {
     return _shops.where((shop) => shop.acceptsSubscription == true).toList();
   }
@@ -133,14 +133,30 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
                                 return CategoryCard(
                                   name: category['name']!,
                                   icon: category['icon']!,
+                                  onTap: () {
+                                    AppRoutes.push(
+                                      context,
+                                      ShopListScreen(
+                                        initialSelectedCategory:
+                                            category['name']!,
+                                      ),
+                                    );
+                                  },
                                 );
                               } else {
                                 final category = _categories[index];
+                                final categoryName = category.name ?? 'Unknown';
                                 return CategoryCard(
-                                  name: category.name ?? 'Unknown',
-                                  icon: _getIconForCategory(
-                                    category.name ?? '',
-                                  ),
+                                  name: categoryName,
+                                  icon: _getIconForCategory(categoryName),
+                                  onTap: () {
+                                    AppRoutes.push(
+                                      context,
+                                      ShopListScreen(
+                                        initialSelectedCategory: categoryName,
+                                      ),
+                                    );
+                                  },
                                 );
                               }
                             },
@@ -193,6 +209,17 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
                                       return SubscriptionShopCard(
                                         name: shop.name ?? 'Unknown',
                                         image: shop.shopBanner ?? '',
+                                        shopId: shop.id,
+                                        onTap: shop.id != null
+                                            ? () {
+                                                AppRoutes.push(
+                                                  context,
+                                                  ShopDetailsScreen(
+                                                    shopId: shop.id,
+                                                  ),
+                                                );
+                                              }
+                                            : null,
                                       );
                                     },
                                   ),
@@ -207,7 +234,10 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
                         title: 'All Shops',
                         subtitle: 'Browse all the shops',
                         onViewAll: () {
-                          AppRoutes.push(context, ShopListScreen());
+                          AppRoutes.push(
+                            context,
+                            ShopListScreen(initialSelectedCategory: 'All'),
+                          );
                         },
                       ),
                     ),
@@ -233,6 +263,15 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
                             image:
                                 shop.shopBanner ??
                                 'assets/images/default_shop.jpg',
+                            shopId: shop.id,
+                            onTap: shop.id != null
+                                ? () {
+                                    AppRoutes.push(
+                                      context,
+                                      ShopDetailsScreen(shopId: shop.id),
+                                    );
+                                  }
+                                : null,
                           );
                         },
                       ),

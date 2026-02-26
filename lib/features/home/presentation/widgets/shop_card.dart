@@ -5,18 +5,22 @@ class ShopCard extends StatelessWidget {
   final String name;
   final String category;
   final String image;
+  final String? shopId;
+  final VoidCallback? onTap;
 
   const ShopCard({
     super.key,
     required this.name,
     required this.category,
     required this.image,
+    this.shopId,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         children: [
           Expanded(

@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 class CategoryCard extends StatelessWidget {
   final String name;
   final String icon;
+  final VoidCallback? onTap;
 
-  const CategoryCard({super.key, required this.name, required this.icon});
+  const CategoryCard({
+    super.key,
+    required this.name,
+    required this.icon,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // Navigate to category details
-      },
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/features/category/domain/entities/category_entity.dart';
+import 'package:resub/features/category/presentation/state/category_state.dart';
+import 'package:resub/features/category/presentation/view_models/category_view_model.dart';
 import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 import 'package:resub/features/shop/presentation/state/shop_state.dart';
 import 'package:resub/features/shop/presentation/view_models/shop_view_model.dart';
 import 'package:resub/features/shop/presentation/widgets/shop_list_card.dart';
+import 'package:resub/features/shop/presentation/widgets/category_chip_filter.dart';
 
 class ShopListScreen extends ConsumerStatefulWidget {
-  const ShopListScreen({super.key});
+  final String? initialSelectedCategory;
+
+  const ShopListScreen({super.key, this.initialSelectedCategory});
 
   @override
   ConsumerState<ShopListScreen> createState() => _ShopListScreenState();
@@ -14,6 +20,14 @@ class ShopListScreen extends ConsumerStatefulWidget {
 
 class _ShopListScreenState extends ConsumerState<ShopListScreen> {
   late List<ShopEntity> _shops = [];
+  late List<CategoryEntity> _categories = [];
+  late String _selectedCategory;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _selectedCategory = widget.initialSelectedCategory ?? 'All';
+  }
 
   @override
   void initState() {
@@ -25,6 +39,16 @@ class _ShopListScreenState extends ConsumerState<ShopListScreen> {
 
   Future<void> _loadShopData() async {
     await ref.read(shopViewModelProvider.notifier).getAllShops();
+    await ref.read(categoryViewModelProvider.notifier).getAllShopCategories();
+  }
+
+  List<ShopEntity> get _filteredShops {
+    if (_selectedCategory == 'All') {
+      return _shops;
+    }
+    return _shops
+        .where((shop) => shop.categoryName == _selectedCategory)
+        .toList();
   }
 
   void _openShopDetails(ShopEntity shop) {
@@ -38,6 +62,13 @@ class _ShopListScreenState extends ConsumerState<ShopListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
+      if (next.status == CategoryStatus.loaded) {
+        setState(() {
+          _categories = next.categories ?? [];
+        });
+      }
+    });
     ref.listen<ShopState>(shopViewModelProvider, (previous, next) {
       if (next.status == ShopStatus.loaded && next.shops != null) {
         setState(() {
@@ -65,8 +96,39 @@ class _ShopListScreenState extends ConsumerState<ShopListScreen> {
       ),
       body: Column(
         children: [
+          // Category Horizontal Scroll
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                CategoryChipFilter(
+                  categoryName: 'All',
+                  isSelected: _selectedCategory == 'All',
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedCategory = 'All';
+                    });
+                  },
+                ),
+                ..._categories.map((category) {
+                  final categoryName = category.name ?? 'Unknown';
+                  return CategoryChipFilter(
+                    categoryName: categoryName,
+                    isSelected: _selectedCategory == categoryName,
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedCategory = categoryName;
+                      });
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+          // Shops List
           Expanded(
-            child: _shops.isEmpty
+            child: _filteredShops.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -96,10 +158,10 @@ class _ShopListScreenState extends ConsumerState<ShopListScreen> {
                     ),
                   )
                 : ListView.builder(
-                    itemCount: _shops.length,
+                    itemCount: _filteredShops.length,
                     padding: const EdgeInsets.all(16),
                     itemBuilder: (context, index) {
-                      final shop = _shops[index];
+                      final shop = _filteredShops[index];
                       return ShopListCard(
                         shop: shop,
                         onTap: () => _openShopDetails(shop),
