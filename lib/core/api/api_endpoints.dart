@@ -48,4 +48,10 @@ class ApiEndpoints {
 
   // ============ Product Endpoints ============
   static const String product = '/product';
+  //=========== Subscription Endpoints ============
+  static const String subscription = '/subscription';
+  static const String subscriptionItem = '/subscription-item';
+  // ============ Order Endpoints ============
+  static const String order = '/order';
+  static const String orderItem = '/order-item';
 }
