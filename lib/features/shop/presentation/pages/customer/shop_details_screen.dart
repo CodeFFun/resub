@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/core/widgets/my_snackbar.dart';
+import 'package:resub/features/order/domain/entities/order_entity.dart';
+import 'package:resub/features/order/domain/entities/order_item_entity.dart';
+import 'package:resub/features/order/presentation/state/order_state.dart';
+import 'package:resub/features/order/presentation/view_models/order_view_model.dart';
 import 'package:resub/features/product/presentation/state/product_state.dart';
 import 'package:resub/features/product/presentation/view_models/product_view_model.dart';
 import 'package:resub/features/shop/presentation/state/shop_state.dart';
@@ -29,6 +34,32 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
     });
   }
 
+  void _onCartPressed(ProductEntity product) async {
+    final orderItem = OrderItemEntity(
+      quantity: 1,
+      unitPrice: product.basePrice,
+      productId: ProductInfo(id: product.id, name: product.name),
+    );
+    await ref
+        .read(orderViewModelProvider.notifier)
+        .createOrderItem(orderItemEntity: orderItem);
+
+    final orderState = ref.read(orderViewModelProvider);
+
+    if (orderState.status == OrderStatus.created &&
+        orderState.orderItem != null) {
+      final createdOrderItem = orderState.orderItem!;
+
+      final order = OrderEntity(
+        orderItemsId: [createdOrderItem],
+        shopId: ShopInfo(id: _shop?.id, name: _shop?.name),
+      );
+      await ref
+          .read(orderViewModelProvider.notifier)
+          .createOrder(shopId: _shop!.id!, orderEntity: order);
+    }
+  }
+
   Future<void> _loadShopData() async {
     if (widget.shopId != null) {
       await ref
@@ -39,61 +70,6 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
           .getProductsByShopId(shopId: widget.shopId!);
     }
   }
-
-  // // Dummy product data
-  // List<ProductEntity> get dummyProducts => const [
-  //   ProductEntity(
-  //     id: '1',
-  //     name: 'Lunch Combo',
-  //     description:
-  //         'Chicken katsu curry with rice, chicken and avocado sushi 4pcs, chicken karaage 4pcs, miso soup',
-  //     basePrice: 699,
-  //     stockQuantity: 10,
-  //     discount: 0,
-  //     shopIds: ['1'],
-  //     categoryId: '1',
-  //   ),
-  //   ProductEntity(
-  //     id: '2',
-  //     name: 'Edamame',
-  //     description: 'Steamed young soybeans lightly salted and served warm',
-  //     basePrice: 225,
-  //     stockQuantity: 20,
-  //     discount: 0,
-  //     shopIds: ['1'],
-  //     categoryId: '1',
-  //   ),
-  //   ProductEntity(
-  //     id: '3',
-  //     name: 'Chicken Teriyaki',
-  //     description: 'Grilled chicken with teriyaki sauce served with rice',
-  //     basePrice: 450,
-  //     stockQuantity: 15,
-  //     discount: 0,
-  //     shopIds: ['1'],
-  //     categoryId: '1',
-  //   ),
-  //   ProductEntity(
-  //     id: '4',
-  //     name: 'Salmon Sushi',
-  //     description: 'Fresh salmon sushi 8 pieces',
-  //     basePrice: 850,
-  //     stockQuantity: 8,
-  //     discount: 0,
-  //     shopIds: ['1'],
-  //     categoryId: '1',
-  //   ),
-  //   ProductEntity(
-  //     id: '5',
-  //     name: 'Gyoza',
-  //     description: 'Pan-fried dumplings filled with pork and vegetables',
-  //     basePrice: 350,
-  //     stockQuantity: 25,
-  //     discount: 0,
-  //     shopIds: ['1'],
-  //     categoryId: '1',
-  //   ),
-  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +85,15 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
         setState(() {
           _products = next.products!;
         });
+      }
+    });
+    ref.listen<OrderState>(orderViewModelProvider, (previous, next) {
+      if (next.status == OrderStatus.created) {
+        showMySnackBar(
+          context: context,
+          message: "Product added to cart",
+          color: Colors.green,
+        );
       }
     });
     return Scaffold(
@@ -142,12 +127,7 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
                           );
                         },
                         onCartPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${product.name} added to cart'),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
+                          _onCartPressed(product);
                         },
                       ),
                     );

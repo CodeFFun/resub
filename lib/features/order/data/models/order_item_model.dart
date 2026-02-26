@@ -47,13 +47,23 @@ class OrderItemApiModel {
   });
 
   factory OrderItemApiModel.fromJson(Map<String, dynamic> json) {
+    ProductInfoApiModel? productInfo;
+
+    if (json['productId'] != null) {
+      if (json['productId'] is Map<String, dynamic>) {
+        // Backend returns full product object
+        productInfo = ProductInfoApiModel.fromJson(
+          json['productId'] as Map<String, dynamic>,
+        );
+      } else if (json['productId'] is String) {
+        // Backend returns just the product ID string
+        productInfo = ProductInfoApiModel(id: json['productId'] as String?);
+      }
+    }
+
     return OrderItemApiModel(
       id: json['_id'] as String?,
-      productId: json['productId'] != null
-          ? ProductInfoApiModel.fromJson(
-              json['productId'] as Map<String, dynamic>,
-            )
-          : null,
+      productId: productInfo,
       quantity: json['quantity'] as int?,
       unitPrice: (json['unit_price'] as num?)?.toDouble(),
     );
@@ -62,7 +72,8 @@ class OrderItemApiModel {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (id != null) json['_id'] = id;
-    if (productId != null) json['productId'] = productId!.toJson();
+    if (productId != null)
+      json['productId'] = productId!.id; // Send only the ID string to backend
     if (quantity != null) json['quantity'] = quantity;
     if (unitPrice != null) json['unit_price'] = unitPrice;
     return json;

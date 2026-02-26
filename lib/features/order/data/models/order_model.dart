@@ -81,12 +81,13 @@ class OrderApiModel {
     if (id != null) json['_id'] = id;
     if (orderItemsId != null) {
       json['orderItemsId'] = orderItemsId!
-          .map((item) => item.toJson())
+          .map((item) => item.id) // Send only the ID strings
           .toList();
     }
-    if (shopId != null) json['shopId'] = shopId!.toJson();
+    if (shopId != null) json['shopId'] = shopId!.id; // Send only the ID string
     if (deliveryType != null) json['delivery_type'] = deliveryType;
-    if (scheduleFor != null)json['schedule_for'] = scheduleFor?.toIso8601String();
+    if (scheduleFor != null)
+      json['schedule_for'] = scheduleFor?.toIso8601String();
     if (subscriptionId != null) json['subscriptionId'] = subscriptionId;
     if (userId != null) json['userId'] = userId;
     return json;
