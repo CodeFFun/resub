@@ -9,6 +9,12 @@ import 'package:resub/features/product/presentation/state/product_state.dart';
 import 'package:resub/features/product/presentation/view_models/product_view_model.dart';
 import 'package:resub/features/shop/presentation/state/shop_state.dart';
 import 'package:resub/features/shop/presentation/view_models/shop_view_model.dart';
+import 'package:resub/features/subscription/domain/entities/subscription_entity.dart'
+    as subscription;
+import 'package:resub/features/subscription/domain/entities/subscription_plan_entity.dart';
+import 'package:resub/features/subscription/domain/entities/product_info_entity.dart';
+import 'package:resub/features/subscription/presentation/state/subscription_state.dart';
+import 'package:resub/features/subscription/presentation/view_models/subscription_view_model.dart';
 import '../../widgets/shop_header_card.dart';
 import '../../widgets/product_list_item.dart';
 import '../../../domain/entities/shop_entity.dart';
@@ -32,6 +38,40 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadShopData();
     });
+  }
+
+  void _onHeartPressed(ProductEntity product) async {
+    final subPlan = SubscriptionPlanEntity(
+      frequency: 1,
+      pricePerCycle: product.basePrice * product.stockQuantity,
+      productId: [
+        SubscriptionProductInfo(
+          id: product.id,
+          name: product.name,
+          quantity: product.stockQuantity,
+          basePrice: product.basePrice,
+        ),
+      ],
+      quantity: product.stockQuantity,
+    );
+    await ref
+        .read(subscriptionViewModelProvider.notifier)
+        .createSubscriptionPlan(subscriptionPlanEntity: subPlan);
+
+    final subState = ref.read(subscriptionViewModelProvider);
+    if (subState.status == SubscriptionStatus.created &&
+        subState.subscriptionPlan != null) {
+      final createSubPlan = subState.subscriptionPlan!;
+      final sub = subscription.SubscriptionEntity(
+        remainingCycle: 1,
+        subscriptionPlanId: createSubPlan,
+        startDate: DateTime.now(),
+        shopId: _shop?.id,
+      );
+      await ref
+          .read(subscriptionViewModelProvider.notifier)
+          .createSubscription(shopId: _shop!.id!, subscriptionEntity: sub);
+    }
   }
 
   void _onCartPressed(ProductEntity product) async {
@@ -96,6 +136,18 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
         );
       }
     });
+    ref.listen<SubscriptionState>(subscriptionViewModelProvider, (
+      previous,
+      next,
+    ) {
+      if (next.status == SubscriptionStatus.created) {
+        showMySnackBar(
+          context: context,
+          message: "Subscription created",
+          color: Colors.green,
+        );
+      }
+    });
     return Scaffold(
       body: Stack(
         children: [
@@ -117,14 +169,7 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
                       child: ProductListItem(
                         product: product,
                         onLovePressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${product.name} added to favorites',
-                              ),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
+                          _onHeartPressed(product);
                         },
                         onCartPressed: () {
                           _onCartPressed(product);

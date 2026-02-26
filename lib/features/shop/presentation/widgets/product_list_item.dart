@@ -59,16 +59,9 @@ class _ProductListItemState extends State<ProductListItem> {
                 // Love/Favorite button
                 IconButton(
                   onPressed: () {
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
                     widget.onLovePressed();
                   },
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : Colors.grey,
-                  ),
-                  tooltip: 'Add to favorites',
+                  icon: const Icon(Icons.favorite),
                 ),
                 const SizedBox(width: 8),
                 // Cart button

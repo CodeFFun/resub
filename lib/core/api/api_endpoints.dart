@@ -50,7 +50,7 @@ class ApiEndpoints {
   static const String product = '/product';
   //=========== Subscription Endpoints ============
   static const String subscription = '/subscription';
-  static const String subscriptionItem = '/subscription-item';
+  static const String subscriptionPlan = '/subscription-plan';
   // ============ Order Endpoints ============
   static const String order = '/order';
   static const String orderItem = '/order-item';
