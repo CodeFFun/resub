@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/core/api/api_endpoints.dart';
 import '../../domain/entities/shop_entity.dart';
 
 class ShopHeaderCard extends StatelessWidget {
@@ -11,7 +12,6 @@ class ShopHeaderCard extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Shop Banner Image
         Container(
           height: 280,
           width: double.infinity,
@@ -19,7 +19,9 @@ class ShopHeaderCard extends StatelessWidget {
             color: Colors.grey[300],
             image: shop.shopBanner != null
                 ? DecorationImage(
-                    image: NetworkImage(shop.shopBanner!),
+                    image: NetworkImage(
+                      '${ApiEndpoints.baseUrl}${shop.shopBanner!}',
+                    ),
                     fit: BoxFit.cover,
                   )
                 : null,
