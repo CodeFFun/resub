@@ -54,6 +54,27 @@ class OrderApiModel {
   });
 
   factory OrderApiModel.fromJson(Map<String, dynamic> json) {
+    // Handle subscriptionId - could be String or Map
+    String? subscriptionIdStr;
+    if (json['subscriptionId'] != null) {
+      if (json['subscriptionId'] is String) {
+        subscriptionIdStr = json['subscriptionId'] as String;
+      } else if (json['subscriptionId'] is Map<String, dynamic>) {
+        subscriptionIdStr =
+            (json['subscriptionId'] as Map<String, dynamic>)['_id'] as String?;
+      }
+    }
+
+    // Handle userId - could be String or Map
+    String? userIdStr;
+    if (json['userId'] != null) {
+      if (json['userId'] is String) {
+        userIdStr = json['userId'] as String;
+      } else if (json['userId'] is Map<String, dynamic>) {
+        userIdStr = (json['userId'] as Map<String, dynamic>)['_id'] as String?;
+      }
+    }
+
     return OrderApiModel(
       id: json['_id'] as String?,
       orderItemsId: json['orderItemsId'] != null
@@ -71,8 +92,8 @@ class OrderApiModel {
       scheduleFor: json['schedule_for'] != null
           ? DateTime.parse(json['schedule_for'] as String)
           : null,
-      subscriptionId: json['subscriptionId'] as String?,
-      userId: json['userId'] as String?,
+      subscriptionId: subscriptionIdStr,
+      userId: userIdStr,
     );
   }
 
@@ -86,8 +107,9 @@ class OrderApiModel {
     }
     if (shopId != null) json['shopId'] = shopId!.id; // Send only the ID string
     if (deliveryType != null) json['delivery_type'] = deliveryType;
-    if (scheduleFor != null)
+    if (scheduleFor != null) {
       json['schedule_for'] = scheduleFor?.toIso8601String();
+    }
     if (subscriptionId != null) json['subscriptionId'] = subscriptionId;
     if (userId != null) json['userId'] = userId;
     return json;

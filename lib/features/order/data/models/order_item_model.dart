@@ -3,13 +3,17 @@ import 'package:resub/features/order/domain/entities/order_item_entity.dart';
 class ProductInfoApiModel {
   final String? id;
   final String? name;
+  final double? basePrice;
+  final int? discount;
 
-  ProductInfoApiModel({this.id, this.name});
+  ProductInfoApiModel({this.id, this.name, this.basePrice, this.discount});
 
   factory ProductInfoApiModel.fromJson(Map<String, dynamic> json) {
     return ProductInfoApiModel(
       id: json['_id'] as String?,
       name: json['name'] as String?,
+      basePrice: (json['base_price'] as num?)?.toDouble(),
+      discount: json['discount'] as int?,
     );
   }
 
@@ -17,15 +21,27 @@ class ProductInfoApiModel {
     final json = <String, dynamic>{};
     if (id != null) json['_id'] = id;
     if (name != null) json['name'] = name;
+    if (basePrice != null) json['base_price'] = basePrice;
+    if (discount != null) json['discount'] = discount;
     return json;
   }
 
   ProductInfo toEntity() {
-    return ProductInfo(id: id, name: name);
+    return ProductInfo(
+      id: id,
+      name: name,
+      basePrice: basePrice,
+      discount: discount,
+    );
   }
 
   factory ProductInfoApiModel.fromEntity(ProductInfo entity) {
-    return ProductInfoApiModel(id: entity.id, name: entity.name);
+    return ProductInfoApiModel(
+      id: entity.id,
+      name: entity.name,
+      basePrice: entity.basePrice,
+      discount: entity.discount,
+    );
   }
 }
 
@@ -51,12 +67,10 @@ class OrderItemApiModel {
 
     if (json['productId'] != null) {
       if (json['productId'] is Map<String, dynamic>) {
-        // Backend returns full product object
         productInfo = ProductInfoApiModel.fromJson(
           json['productId'] as Map<String, dynamic>,
         );
       } else if (json['productId'] is String) {
-        // Backend returns just the product ID string
         productInfo = ProductInfoApiModel(id: json['productId'] as String?);
       }
     }
@@ -72,8 +86,9 @@ class OrderItemApiModel {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (id != null) json['_id'] = id;
-    if (productId != null)
-      json['productId'] = productId!.id; // Send only the ID string to backend
+    if (productId != null) {
+      json['productId'] = productId!.id;
+    }
     if (quantity != null) json['quantity'] = quantity;
     if (unitPrice != null) json['unit_price'] = unitPrice;
     return json;

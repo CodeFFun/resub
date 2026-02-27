@@ -30,7 +30,7 @@ class ShopDetailsScreen extends ConsumerStatefulWidget {
 
 class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
   ShopEntity? _shop;
-  late List<ProductEntity> _products = [];
+  List<ProductEntity> _products = [];
 
   @override
   void initState() {
@@ -153,7 +153,8 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
         children: [
           CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: ShopHeaderCard(shop: _shop!)),
+              if (_shop != null)
+                SliverToBoxAdapter(child: ShopHeaderCard(shop: _shop!)),
               SliverPadding(
                 padding: const EdgeInsets.only(
                   left: 16.0,

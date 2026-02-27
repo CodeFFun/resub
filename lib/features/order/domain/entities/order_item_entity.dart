@@ -3,15 +3,26 @@ import 'package:equatable/equatable.dart';
 class ProductInfo extends Equatable {
   final String? id;
   final String? name;
+  final double? basePrice;
+  final int? discount;
 
-  const ProductInfo({this.id, this.name});
+  const ProductInfo({this.id, this.name, this.basePrice, this.discount});
 
-  ProductInfo copyWith({String? id, String? name}) {
-    return ProductInfo(id: id ?? this.id, name: name ?? this.name);
+  ProductInfo copyWith({
+    String? id,
+    String? name,
+    double? basePrice,
+    int? discount,
+  }) {
+    return ProductInfo(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      basePrice: basePrice ?? this.basePrice,
+    );
   }
 
   @override
-  List<Object?> get props => [id, name];
+  List<Object?> get props => [id, name, basePrice, discount];
 }
 
 class OrderItemEntity extends Equatable {
