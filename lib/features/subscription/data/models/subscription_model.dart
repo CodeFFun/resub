@@ -27,6 +27,37 @@ class SubscriptionApiModel {
   });
 
   factory SubscriptionApiModel.fromJson(Map<String, dynamic> json) {
+    // Handle shopId - could be String or Map
+    String? shopIdStr;
+    if (json['shopId'] != null) {
+      if (json['shopId'] is String) {
+        shopIdStr = json['shopId'] as String;
+      } else if (json['shopId'] is Map<String, dynamic>) {
+        shopIdStr = (json['shopId'] as Map<String, dynamic>)['_id'] as String?;
+      }
+    }
+
+    // Handle userId - could be String or Map
+    String? userIdStr;
+    if (json['userId'] != null) {
+      if (json['userId'] is String) {
+        userIdStr = json['userId'] as String;
+      } else if (json['userId'] is Map<String, dynamic>) {
+        userIdStr = (json['userId'] as Map<String, dynamic>)['_id'] as String?;
+      }
+    }
+
+    // Handle paymentId - could be String or Map
+    String? paymentIdStr;
+    if (json['paymentId'] != null) {
+      if (json['paymentId'] is String) {
+        paymentIdStr = json['paymentId'] as String;
+      } else if (json['paymentId'] is Map<String, dynamic>) {
+        paymentIdStr =
+            (json['paymentId'] as Map<String, dynamic>)['_id'] as String?;
+      }
+    }
+
     return SubscriptionApiModel(
       id: json['_id'] as String?,
       status: json['status'] as String?,
@@ -39,9 +70,9 @@ class SubscriptionApiModel {
       startDate: json['start_date'] != null
           ? DateTime.tryParse(json['start_date'] as String)
           : null,
-      shopId: json['shopId'] as String?,
-      userId: json['userId'] as String?,
-      paymentId: json['paymentId'] as String?,
+      shopId: shopIdStr,
+      userId: userIdStr,
+      paymentId: paymentIdStr,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String)
           : null,

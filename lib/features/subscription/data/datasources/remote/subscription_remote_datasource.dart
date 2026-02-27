@@ -109,7 +109,7 @@ class SubscriptionRemoteDatasource implements ISubscriptionRemoteDatasource {
     SubscriptionApiModel subscriptionApiModel,
   ) async {
     final token = await _tokenService.getToken();
-    final response = await _apiClient.put(
+    final response = await _apiClient.patch(
       '${ApiEndpoints.subscription}/$id',
       data: subscriptionApiModel.toJson(),
       options: Options(headers: {'Authorization': 'Bearer $token'}),

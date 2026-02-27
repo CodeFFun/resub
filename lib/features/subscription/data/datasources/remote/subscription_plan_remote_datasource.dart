@@ -96,7 +96,7 @@ class SubscriptionPlanRemoteDatasource
     SubscriptionPlanApiModel subscriptionPlanApiModel,
   ) async {
     final token = await _tokenService.getToken();
-    final response = await _apiClient.put(
+    final response = await _apiClient.patch(
       '${ApiEndpoints.subscriptionPlan}/$id',
       data: subscriptionPlanApiModel.toJson(),
       options: Options(headers: {'Authorization': 'Bearer $token'}),

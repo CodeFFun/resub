@@ -5,12 +5,14 @@ class SubscriptionProductInfoApiModel {
   final int? quantity;
   final num? basePrice;
   final String? id;
+  final int? discount;
 
   SubscriptionProductInfoApiModel({
     this.name,
     this.quantity,
     this.basePrice,
     this.id,
+    this.discount,
   });
 
   factory SubscriptionProductInfoApiModel.fromJson(Map<String, dynamic> json) {
@@ -19,6 +21,7 @@ class SubscriptionProductInfoApiModel {
       name: json['name'] as String?,
       quantity: json['quantity'] as int?,
       basePrice: json['base_price'] as num?,
+      discount: json['discount'] as int?,
     );
   }
 
@@ -37,6 +40,7 @@ class SubscriptionProductInfoApiModel {
       name: name,
       quantity: quantity,
       basePrice: basePrice,
+      discount: discount,
     );
   }
 
@@ -48,6 +52,7 @@ class SubscriptionProductInfoApiModel {
       quantity: entity.quantity,
       basePrice: entity.basePrice,
       id: entity.id,
+      discount: entity.discount,
     );
   }
 }
