@@ -13,6 +13,7 @@ import 'package:resub/features/product/presentation/pages/product_page_screen.da
 import 'package:resub/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:resub/features/profile/presentation/state/profile_state.dart';
 import 'package:resub/features/profile/presentation/view_models/profile_view_model.dart';
+import 'package:resub/features/settings/presentation/pages/sensor_settings_screen.dart';
 import 'package:resub/features/settings/presentation/widgets/profile_menu_item.dart';
 import 'package:resub/features/shop/presentation/pages/shop_page_screen.dart';
 
@@ -190,6 +191,15 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                 subtitle: 'Manage products',
                 onTap: () {
                   AppRoutes.push(context, const ProductPageScreen());
+                },
+              ),
+
+              ProfileMenuItem(
+                icon: Icons.sensors_outlined,
+                title: 'Sensor Settings',
+                subtitle: 'Configure ambient light and proximity sensors',
+                onTap: () {
+                  AppRoutes.push(context, const SensorSettingsScreen());
                 },
               ),
 

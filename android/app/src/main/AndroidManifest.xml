@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>   
 
+    <!-- Sensor features for ambient light and proximity -->
+    <uses-feature android:name="android.hardware.sensor.light" android:required="false"/>
+    <uses-feature android:name="android.hardware.sensor.proximity" android:required="false"/>
 
     <application
         android:label="resub"

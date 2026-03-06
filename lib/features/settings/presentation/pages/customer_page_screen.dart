@@ -11,6 +11,7 @@ import 'package:resub/features/payment/presentation/pages/payment_page_screen.da
 import 'package:resub/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:resub/features/profile/presentation/state/profile_state.dart';
 import 'package:resub/features/profile/presentation/view_models/profile_view_model.dart';
+import 'package:resub/features/settings/presentation/pages/sensor_settings_screen.dart';
 import 'package:resub/features/settings/presentation/widgets/profile_menu_item.dart';
 
 class CustomerPageScreen extends ConsumerStatefulWidget {
@@ -150,6 +151,14 @@ class _CustomerPageScreenState extends ConsumerState<CustomerPageScreen> {
                 subtitle: 'Manage your Account Details',
                 onTap: () {
                   AppRoutes.push(context, const PersonalInfoPage());
+                },
+              ),
+              ProfileMenuItem(
+                icon: Icons.sensors_outlined,
+                title: 'Sensor Settings',
+                subtitle: 'Configure ambient light and proximity sensors',
+                onTap: () {
+                  AppRoutes.push(context, const SensorSettingsScreen());
                 },
               ),
               ProfileMenuItem(
