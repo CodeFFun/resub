@@ -7,6 +7,8 @@ import 'package:resub/features/order/presentation/widgets/order_item_card.dart';
 import 'package:resub/features/order/presentation/widgets/proceed_checkout_button.dart';
 import 'package:resub/features/order/presentation/widgets/select_all_items_widget.dart';
 import 'package:resub/features/order/presentation/widgets/total_price_section.dart';
+import 'package:resub/features/payment/presentation/state/payment_state.dart';
+import 'package:resub/features/payment/presentation/view_models/payment_view_model.dart';
 
 class OrderPageScreen extends ConsumerStatefulWidget {
   final List<OrderEntity> order;
@@ -54,8 +56,6 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
   void _toggleGlobalSelectAll() {
     setState(() {
       _globalSelectAll = !_globalSelectAll;
-
-      // Toggle all items in all orders
       for (var orderId in _selectedItemsByOrder.keys) {
         for (var itemId in _selectedItemsByOrder[orderId]!.keys) {
           _selectedItemsByOrder[orderId]![itemId] = _globalSelectAll;
@@ -94,11 +94,8 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
     int newQuantity,
   ) async {
     if (newQuantity < 1) return;
-
     final basePrice = orderItem.productId?.basePrice ?? 0.0;
     final discount = orderItem.productId?.discount ?? 0;
-
-    // Calculate price after discount
     final discountedPrice = basePrice * (1 - discount / 100);
     final newUnitPrice = discountedPrice * newQuantity;
 
@@ -142,7 +139,29 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
     return allSelectedItems;
   }
 
-  void _proceedToCheckout() {
+
+  List<Map<String, String>> _getSelectedItemsWithOrderIdMapping() {
+    List<Map<String, String>> mapping = [];
+
+    for (var order in widget.order) {
+      final orderId = order.id ?? '';
+      if (order.orderItemsId != null &&
+          _selectedItemsByOrder[orderId] != null) {
+        final selectedInThisOrder = order.orderItemsId!
+            .where(
+              (item) => _selectedItemsByOrder[orderId]![item.id ?? ''] ?? false,
+            )
+            .toList();
+        for (var item in selectedInThisOrder) {
+          mapping.add({'itemId': item.id ?? '', 'orderId': orderId});
+        }
+      }
+    }
+
+    return mapping;
+  }
+
+  void _proceedToCheckout() async {
     final selectedItems = _getSelectedItems();
     if (selectedItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -153,14 +172,28 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
       );
       return;
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Proceeding with ${selectedItems.length} item(s)'),
-        duration: const Duration(seconds: 2),
-      ),
+    final totalPrice = selectedItems.fold<double>(
+      0.0,
+      (sum, item) => sum + (item.unitPrice ?? 0.0),
     );
+
+    // Get unique order IDs for the selected items
+    final itemOrderMapping = _getSelectedItemsWithOrderIdMapping();
+    final orderIds = itemOrderMapping
+        .map((mapping) => mapping['orderId'] ?? '')
+        .where((orderId) => orderId.isNotEmpty)
+        .toSet()
+        .toList();
+
+    await ref
+        .read(paymentViewModelProvider.notifier)
+        .initiateEsewaPayment(
+          productName: 'Order Payment',
+          amount: totalPrice.toString(),
+          orderIds: orderIds,
+        );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +201,24 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
     final hasAnyItems = widget.order.any(
       (order) => order.orderItemsId != null && order.orderItemsId!.isNotEmpty,
     );
+    ref.listen<PaymentState>(paymentViewModelProvider, (previous, next) {
+      if (next.status == PaymentStatus.esewaPaymentFailed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment failed: ${next.errorMessage}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      if (next.status == PaymentStatus.created) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment record created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Order Details'), elevation: 0),

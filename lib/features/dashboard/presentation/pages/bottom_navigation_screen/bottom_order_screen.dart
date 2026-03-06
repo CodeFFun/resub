@@ -30,7 +30,6 @@ class _BottomOrderScreenState extends ConsumerState<BottomOrderScreen> {
   @override
   Widget build(BuildContext context) {
     final subscriptionState = ref.watch(subscriptionViewModelProvider);
-    print(subscriptionState.subscriptions?[0].subscriptionPlanId);
     ref.listen(subscriptionViewModelProvider, (previous, next) {
       if (next.status == SubscriptionStatus.updated ||
           next.status == SubscriptionStatus.deleted) {

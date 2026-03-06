@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/features/order/domain/entities/order_entity.dart';
+import 'package:resub/features/order/presentation/state/order_state.dart';
+import 'package:resub/features/order/presentation/view_models/order_view_model.dart';
+import 'package:resub/features/payment/presentation/state/payment_state.dart';
+import 'package:resub/features/payment/presentation/view_models/payment_view_model.dart';
 import 'package:resub/features/subscription/domain/entities/product_info_entity.dart';
-import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
+import 'package:resub/features/subscription/domain/entities/subscription_entity.dart'
+    hide ShopInfo;
 import 'package:resub/features/subscription/presentation/view_models/subscription_view_model.dart';
 import 'package:resub/features/subscription/presentation/widgets/subscription_confirm_button.dart';
 import 'package:resub/features/subscription/presentation/widgets/subscription_item_card.dart';
@@ -22,6 +28,7 @@ class _SubscriptionPageScreenState
     extends ConsumerState<SubscriptionPageScreen> {
   final Map<String, Map<String, bool>> _selectedItemsBySubscription = {};
   bool _globalSelectAll = false;
+  final List<String> _createdOrderIds = [];
 
   @override
   void initState() {
@@ -208,8 +215,9 @@ class _SubscriptionPageScreenState
     return allSelectedItems;
   }
 
-  void _confirmSelection() {
+  Future<void> _confirmSelection() async {
     final selectedItems = _getSelectedItems();
+
     if (selectedItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -220,12 +228,64 @@ class _SubscriptionPageScreenState
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Confirmed ${selectedItems.length} item(s)'),
-        duration: const Duration(seconds: 2),
-      ),
+    _createdOrderIds.clear();
+
+    final Map<String, Set<String>> subscriptionShopMap = {};
+
+    for (var item in selectedItems) {
+      final subscription = item['subscription'] as SubscriptionEntity;
+      final subscriptionId = subscription.id ?? '';
+      final shopId = subscription.shopId ?? '';
+
+      if (subscriptionId.isNotEmpty && shopId.isNotEmpty) {
+        subscriptionShopMap.putIfAbsent(subscriptionId, () => {}).add(shopId);
+      }
+    }
+
+    for (var entry in subscriptionShopMap.entries) {
+      final subscriptionId = entry.key;
+      for (var shopId in entry.value) {
+        await _createOrders(subscriptionId, shopId);
+      }
+    }
+  }
+
+  Future<void> _createOrders(String subscriptionId, String shopId) async {
+    OrderEntity orderEntity = OrderEntity(
+      shopId: ShopInfo(id: shopId),
+      deliveryType: 'subscription',
+      subscriptionId: subscriptionId,
     );
+
+    await ref
+        .read(orderViewModelProvider.notifier)
+        .createOrder(shopId: shopId, orderEntity: orderEntity);
+  }
+
+  Future<void> _createPayments(List<String> orderIds) async {
+    final selectedItems = _getSelectedItems();
+
+    final uniqueSubscriptionIds = <String>{};
+    double totalPrice = 0.0;
+
+    for (var item in selectedItems) {
+      final subscription = item['subscription'] as SubscriptionEntity;
+      final subscriptionId = subscription.id ?? '';
+      if (subscriptionId.isNotEmpty &&
+          !uniqueSubscriptionIds.contains(subscriptionId)) {
+        uniqueSubscriptionIds.add(subscriptionId);
+        final pricePerCycle =
+            subscription.subscriptionPlanId?.pricePerCycle ?? 0.0;
+        totalPrice += pricePerCycle;
+      }
+    }
+    await ref
+        .read(paymentViewModelProvider.notifier)
+        .initiateEsewaPayment(
+          productName: 'Order Payment',
+          amount: totalPrice.toString(),
+          orderIds: orderIds,
+        );
   }
 
   @override
@@ -236,6 +296,44 @@ class _SubscriptionPageScreenState
           subscription.subscriptionPlanId?.productId != null &&
           subscription.subscriptionPlanId!.productId!.isNotEmpty,
     );
+    ref.listen(orderViewModelProvider, (previous, next) {
+      if (next.status == OrderStatus.created && next.order?.id != null) {
+        // Store the created order ID
+        if (!_createdOrderIds.contains(next.order!.id!)) {
+          _createdOrderIds.add(next.order!.id!);
+        }
+        _createPayments(_createdOrderIds);
+      } else if (next.status == OrderStatus.error) {
+        debugPrint(next.errorMessage);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${next.errorMessage ?? "Unknown error"}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    });
+
+    ref.listen<PaymentState>(paymentViewModelProvider, (previous, next) {
+      if (next.status == PaymentStatus.esewaPaymentFailed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment failed: ${next.errorMessage}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      if (next.status == PaymentStatus.created) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment record created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Subscriptions'), elevation: 0),

@@ -54,4 +54,8 @@ class ApiEndpoints {
   // ============ Order Endpoints ============
   static const String order = '/order';
   static const String orderItem = '/order-item';
+
+  // ============ Payment Endpoints ============
+  static const String payment = '/payment';
+  static const String paymentVerification = '/payment/verify';
 }

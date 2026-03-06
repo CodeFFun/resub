@@ -75,6 +75,18 @@ class OrderApiModel {
       }
     }
 
+    // Handle shopId - could be String or Map
+    ShopInfoApiModel? shopIdModel;
+    if (json['shopId'] != null) {
+      if (json['shopId'] is String) {
+        shopIdModel = ShopInfoApiModel(id: json['shopId'] as String);
+      } else if (json['shopId'] is Map<String, dynamic>) {
+        shopIdModel = ShopInfoApiModel.fromJson(
+          json['shopId'] as Map<String, dynamic>,
+        );
+      }
+    }
+
     return OrderApiModel(
       id: json['_id'] as String?,
       orderItemsId: json['orderItemsId'] != null
@@ -85,9 +97,7 @@ class OrderApiModel {
                 )
                 .toList()
           : null,
-      shopId: json['shopId'] != null
-          ? ShopInfoApiModel.fromJson(json['shopId'] as Map<String, dynamic>)
-          : null,
+      shopId: shopIdModel,
       deliveryType: json['delivery_type'] as String?,
       scheduleFor: json['schedule_for'] != null
           ? DateTime.parse(json['schedule_for'] as String)
