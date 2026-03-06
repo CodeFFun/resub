@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:resub/features/order/domain/entities/order_item_entity.dart';
+import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
 
 class ShopInfo extends Equatable {
   final String? id;
@@ -22,6 +23,7 @@ class OrderEntity extends Equatable {
   final String? deliveryType;
   final DateTime? scheduleFor;
   final String? subscriptionId;
+  final SubscriptionEntity? subscription;
   final String? userId;
 
   const OrderEntity({
@@ -31,6 +33,7 @@ class OrderEntity extends Equatable {
     this.deliveryType,
     this.scheduleFor,
     this.subscriptionId,
+    this.subscription,
     this.userId,
   });
 
@@ -41,6 +44,7 @@ class OrderEntity extends Equatable {
     String? deliveryType,
     DateTime? scheduleFor,
     String? subscriptionId,
+    SubscriptionEntity? subscription,
     String? userId,
   }) {
     return OrderEntity(
@@ -50,6 +54,7 @@ class OrderEntity extends Equatable {
       deliveryType: deliveryType ?? this.deliveryType,
       scheduleFor: scheduleFor ?? this.scheduleFor,
       subscriptionId: subscriptionId ?? this.subscriptionId,
+      subscription: subscription ?? this.subscription,
       userId: userId ?? this.userId,
     );
   }
@@ -62,6 +67,7 @@ class OrderEntity extends Equatable {
     deliveryType,
     scheduleFor,
     subscriptionId,
+    subscription,
     userId,
   ];
 }

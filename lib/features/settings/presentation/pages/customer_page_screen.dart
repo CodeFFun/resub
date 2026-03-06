@@ -5,6 +5,7 @@ import 'package:resub/core/api/api_endpoints.dart';
 import 'package:resub/core/services/storage/token_service.dart';
 import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/auth/presentation/pages/login_screen.dart';
+import 'package:resub/features/payment/presentation/pages/payment_page_screen.dart';
 import 'package:resub/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:resub/features/profile/presentation/state/profile_state.dart';
 import 'package:resub/features/profile/presentation/view_models/profile_view_model.dart';
@@ -129,7 +130,6 @@ class _CustomerPageScreenState extends ConsumerState<CustomerPageScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 8),
               ProfileMenuItem(
                 icon: Icons.person_outline,
@@ -137,6 +137,14 @@ class _CustomerPageScreenState extends ConsumerState<CustomerPageScreen> {
                 subtitle: 'Manage your Account Details',
                 onTap: () {
                   AppRoutes.push(context, const PersonalInfoPage());
+                },
+              ),
+              const SizedBox(height: 16),
+              ProfileMenuItem(
+                icon: Icons.payment,
+                title: 'Payments',
+                onTap: () {
+                  AppRoutes.push(context, const PaymentPageScreen());
                 },
               ),
               const SizedBox(height: 16),

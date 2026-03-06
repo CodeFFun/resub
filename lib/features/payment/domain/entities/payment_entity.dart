@@ -1,4 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:resub/features/order/domain/entities/order_entity.dart';
+import 'package:resub/features/shop/domain/entities/shop_entity.dart';
+import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
+import 'package:resub/features/user/domain/entities/user_entity.dart';
 
 class PaymentEntity extends Equatable {
   final String? id;
@@ -7,9 +11,11 @@ class PaymentEntity extends Equatable {
   final double amount;
   final DateTime? paidAt;
   final List<String>? orderId;
+  final List<OrderEntity>? orders;
   final String? subscriptionId;
-  final String? userId;
-  final String? shopId;
+  final SubscriptionEntity? subscription;
+  final UserEntity? userId;
+  final ShopEntity? shopId;
   final List<String>? orderItemsId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -21,7 +27,9 @@ class PaymentEntity extends Equatable {
     required this.amount,
     this.paidAt,
     this.orderId,
+    this.orders,
     this.subscriptionId,
+    this.subscription,
     this.userId,
     this.shopId,
     this.orderItemsId,
@@ -36,9 +44,11 @@ class PaymentEntity extends Equatable {
     double? amount,
     DateTime? paidAt,
     List<String>? orderId,
+    List<OrderEntity>? orders,
     String? subscriptionId,
-    String? userId,
-    String? shopId,
+    SubscriptionEntity? subscription,
+    UserEntity? userId,
+    ShopEntity? shopId,
     List<String>? orderItemsId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -50,7 +60,9 @@ class PaymentEntity extends Equatable {
       amount: amount ?? this.amount,
       paidAt: paidAt ?? this.paidAt,
       orderId: orderId ?? this.orderId,
+      orders: orders ?? this.orders,
       subscriptionId: subscriptionId ?? this.subscriptionId,
+      subscription: subscription ?? this.subscription,
       userId: userId ?? this.userId,
       shopId: shopId ?? this.shopId,
       orderItemsId: orderItemsId ?? this.orderItemsId,
@@ -67,7 +79,9 @@ class PaymentEntity extends Equatable {
     amount,
     paidAt,
     orderId,
+    orders,
     subscriptionId,
+    subscription,
     userId,
     shopId,
     orderItemsId,

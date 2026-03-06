@@ -1,4 +1,12 @@
 import 'package:resub/features/payment/domain/entities/payment_entity.dart';
+import 'package:resub/features/order/data/models/order_model.dart';
+import 'package:resub/features/order/domain/entities/order_entity.dart';
+import 'package:resub/features/shop/data/models/shop_model.dart';
+import 'package:resub/features/shop/domain/entities/shop_entity.dart';
+import 'package:resub/features/subscription/data/models/subscription_model.dart';
+import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
+import 'package:resub/features/user/data/models/user_api_model.dart';
+import 'package:resub/features/user/domain/entities/user_entity.dart';
 
 class PaymentApiModel {
   final String? id;
@@ -7,9 +15,11 @@ class PaymentApiModel {
   final double amount;
   final DateTime? paidAt;
   final List<String>? orderId;
+  final List<OrderEntity>? orders;
   final String? subscriptionId;
-  final String? userId;
-  final String? shopId;
+  final SubscriptionEntity? subscription;
+  final UserEntity? userId;
+  final ShopEntity? shopId;
   final List<String>? orderItemsId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -27,7 +37,9 @@ class PaymentApiModel {
     required this.amount,
     this.paidAt,
     this.orderId,
+    this.orders,
     this.subscriptionId,
+    this.subscription,
     this.userId,
     this.shopId,
     this.orderItemsId,
@@ -43,6 +55,77 @@ class PaymentApiModel {
   static String? _extractId(dynamic value) {
     if (value is String) return value;
     if (value is Map<String, dynamic>) return value['_id'] as String?;
+    return null;
+  }
+
+  static UserEntity? _extractUserEntity(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      return UserEntity(userId: value);
+    }
+    if (value is Map<String, dynamic>) {
+      return UserApiModel.fromJson(value).toEntity();
+    }
+    return null;
+  }
+
+  static ShopEntity? _extractShopEntity(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      return ShopEntity(id: value);
+    }
+    if (value is Map<String, dynamic>) {
+      return ShopApiModel.fromJson(value).toEntity();
+    }
+    return null;
+  }
+
+  static SubscriptionEntity? _extractSubscriptionEntity(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      return SubscriptionEntity(id: value);
+    }
+    if (value is Map<String, dynamic>) {
+      return SubscriptionApiModel.fromJson(value).toEntity();
+    }
+    return null;
+  }
+
+  static List<OrderEntity>? _extractOrders(dynamic value) {
+    if (value == null) return null;
+    if (value is List) {
+      final orders = <OrderEntity>[];
+      for (final item in value) {
+        if (item is Map<String, dynamic>) {
+          orders.add(OrderApiModel.fromJson(item).toEntity());
+        } else if (item is String) {
+          orders.add(OrderEntity(id: item));
+        }
+      }
+      return orders;
+    }
+    if (value is Map<String, dynamic>) {
+      return [OrderApiModel.fromJson(value).toEntity()];
+    }
+    if (value is String) {
+      return [OrderEntity(id: value)];
+    }
+    return null;
+  }
+
+  static dynamic _extractFromOrderData(dynamic orderValue, String key) {
+    if (orderValue is Map<String, dynamic>) {
+      return orderValue[key];
+    }
+
+    if (orderValue is List) {
+      for (final order in orderValue) {
+        if (order is Map<String, dynamic> && order[key] != null) {
+          return order[key];
+        }
+      }
+    }
+
     return null;
   }
 
@@ -68,6 +151,21 @@ class PaymentApiModel {
     final shopIdValue = json['shopId'];
     final orderItemsIdValue = json['orderItemsId'];
 
+    final resolvedUser =
+        _extractUserEntity(userIdValue) ??
+        _extractUserEntity(_extractFromOrderData(orderIdValue, 'userId'));
+    final resolvedShop =
+        _extractShopEntity(shopIdValue) ??
+        _extractShopEntity(_extractFromOrderData(orderIdValue, 'shopId'));
+    final resolvedSubscription =
+        _extractSubscriptionEntity(subscriptionIdValue) ??
+        _extractSubscriptionEntity(
+          _extractFromOrderData(orderIdValue, 'subscriptionId'),
+        );
+    final resolvedSubscriptionId =
+        _extractId(subscriptionIdValue) ??
+        _extractId(_extractFromOrderData(orderIdValue, 'subscriptionId'));
+
     return PaymentApiModel(
       id: json['_id'] as String?,
       provider: json['provider'] as String? ?? 'esewa',
@@ -75,9 +173,11 @@ class PaymentApiModel {
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at']) : null,
       orderId: _extractIdList(orderIdValue),
-      subscriptionId: _extractId(subscriptionIdValue),
-      userId: _extractId(userIdValue),
-      shopId: _extractId(shopIdValue),
+      orders: _extractOrders(orderIdValue),
+      subscriptionId: resolvedSubscriptionId,
+      subscription: resolvedSubscription,
+      userId: resolvedUser,
+      shopId: resolvedShop,
       orderItemsId: _extractIdList(orderItemsIdValue),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
@@ -86,7 +186,9 @@ class PaymentApiModel {
           ? DateTime.parse(json['updatedAt'])
           : null,
       // Store raw populated data
-      orderData: orderIdValue is Map ? orderIdValue : null,
+      orderData: orderIdValue is Map || orderIdValue is List
+          ? orderIdValue
+          : null,
       userData: userIdValue is Map ? userIdValue : null,
       subscriptionData: subscriptionIdValue is Map ? subscriptionIdValue : null,
       shopData: shopIdValue is Map ? shopIdValue : null,
@@ -98,7 +200,12 @@ class PaymentApiModel {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     json['amount'] = amount;
-    if (orderId != null && orderId!.isNotEmpty) json['orderId'] = orderId;
+    final resolvedOrderIds =
+        orderId ??
+        orders?.map((order) => order.id).whereType<String>().toList();
+    if (resolvedOrderIds != null && resolvedOrderIds.isNotEmpty) {
+      json['orderId'] = resolvedOrderIds;
+    }
     if (provider != null) json['provider'] = provider;
     if (status != null) json['status'] = status;
     return json;
@@ -112,10 +219,15 @@ class PaymentApiModel {
     if (status != null) json['status'] = status;
     json['amount'] = amount;
     if (paidAt != null) json['paid_at'] = paidAt?.toIso8601String();
-    if (orderId != null && orderId!.isNotEmpty) json['orderId'] = orderId;
+    final resolvedOrderIds =
+        orderId ??
+        orders?.map((order) => order.id).whereType<String>().toList();
+    if (resolvedOrderIds != null && resolvedOrderIds.isNotEmpty) {
+      json['orderId'] = resolvedOrderIds;
+    }
     if (subscriptionId != null) json['subscriptionId'] = subscriptionId;
-    if (userId != null) json['userId'] = userId;
-    if (shopId != null) json['shopId'] = shopId;
+    if (userId?.userId != null) json['userId'] = userId?.userId;
+    if (shopId?.id != null) json['shopId'] = shopId?.id;
     if (orderItemsId != null && orderItemsId!.isNotEmpty) {
       json['orderItemsId'] = orderItemsId;
     }
@@ -130,7 +242,9 @@ class PaymentApiModel {
       amount: amount,
       paidAt: paidAt,
       orderId: orderId,
+      orders: orders,
       subscriptionId: subscriptionId,
+      subscription: subscription,
       userId: userId,
       shopId: shopId,
       orderItemsId: orderItemsId,
@@ -147,7 +261,9 @@ class PaymentApiModel {
       amount: entity.amount,
       paidAt: entity.paidAt,
       orderId: entity.orderId,
+      orders: entity.orders,
       subscriptionId: entity.subscriptionId,
+      subscription: entity.subscription,
       userId: entity.userId,
       shopId: entity.shopId,
       orderItemsId: entity.orderItemsId,
@@ -159,6 +275,17 @@ class PaymentApiModel {
   /// Get the full order object if it was populated from API
   Map<String, dynamic>? getPopulatedOrder() =>
       orderData is Map ? orderData : null;
+
+  /// Get full populated order list if API returned a list
+  List<Map<String, dynamic>>? getPopulatedOrders() {
+    if (orderData is List) {
+      return (orderData as List).whereType<Map<String, dynamic>>().toList();
+    }
+    if (orderData is Map<String, dynamic>) {
+      return [orderData as Map<String, dynamic>];
+    }
+    return null;
+  }
 
   /// Get the full user object if it was populated from API
   Map<String, dynamic>? getPopulatedUser() => userData is Map ? userData : null;

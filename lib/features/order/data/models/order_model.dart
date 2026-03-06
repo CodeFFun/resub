@@ -1,5 +1,8 @@
 import 'package:resub/features/order/data/models/order_item_model.dart';
-import 'package:resub/features/order/domain/entities/order_entity.dart';
+import 'package:resub/features/order/domain/entities/order_entity.dart'
+    as order_entities;
+import 'package:resub/features/subscription/data/models/subscription_model.dart';
+import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
 
 class ShopInfoApiModel {
   final String? id;
@@ -21,11 +24,11 @@ class ShopInfoApiModel {
     return json;
   }
 
-  ShopInfo toEntity() {
-    return ShopInfo(id: id, name: name);
+  order_entities.ShopInfo toEntity() {
+    return order_entities.ShopInfo(id: id, name: name);
   }
 
-  factory ShopInfoApiModel.fromEntity(ShopInfo entity) {
+  factory ShopInfoApiModel.fromEntity(order_entities.ShopInfo entity) {
     return ShopInfoApiModel(id: entity.id, name: entity.name);
   }
 }
@@ -37,6 +40,7 @@ class OrderApiModel {
   final String? deliveryType;
   final DateTime? scheduleFor;
   final String? subscriptionId;
+  final SubscriptionEntity? subscription;
   final String? userId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -48,6 +52,7 @@ class OrderApiModel {
     this.deliveryType,
     this.scheduleFor,
     this.subscriptionId,
+    this.subscription,
     this.userId,
     this.createdAt,
     this.updatedAt,
@@ -56,12 +61,18 @@ class OrderApiModel {
   factory OrderApiModel.fromJson(Map<String, dynamic> json) {
     // Handle subscriptionId - could be String or Map
     String? subscriptionIdStr;
+    SubscriptionEntity? subscriptionEntity;
     if (json['subscriptionId'] != null) {
-      if (json['subscriptionId'] is String) {
-        subscriptionIdStr = json['subscriptionId'] as String;
-      } else if (json['subscriptionId'] is Map<String, dynamic>) {
-        subscriptionIdStr =
-            (json['subscriptionId'] as Map<String, dynamic>)['_id'] as String?;
+      try {
+        if (json['subscriptionId'] is String) {
+          subscriptionIdStr = json['subscriptionId'] as String;
+        } else if (json['subscriptionId'] is Map<String, dynamic>) {
+          final subMap = json['subscriptionId'] as Map<String, dynamic>;
+          subscriptionIdStr = subMap['_id'] as String?;
+          subscriptionEntity = SubscriptionApiModel.fromJson(subMap).toEntity();
+        }
+      } catch (e) {
+        // Silently handle subscription parsing errors
       }
     }
 
@@ -86,23 +97,36 @@ class OrderApiModel {
         );
       }
     }
+    List<OrderItemApiModel>? orderItems;
+    if (json['orderItemsId'] != null) {
+      try {
+        final itemsList = json['orderItemsId'] as List;
+        orderItems = itemsList
+            .map((item) {
+              if (item is Map<String, dynamic>) {
+                return OrderItemApiModel.fromJson(item);
+              } else if (item is String) {
+                return OrderItemApiModel(id: item);
+              }
+              return null;
+            })
+            .whereType<OrderItemApiModel>()
+            .toList();
+      } catch (e) {
+        // Silently handle orderItems parsing errors
+      }
+    }
 
     return OrderApiModel(
       id: json['_id'] as String?,
-      orderItemsId: json['orderItemsId'] != null
-          ? (json['orderItemsId'] as List)
-                .map(
-                  (item) =>
-                      OrderItemApiModel.fromJson(item as Map<String, dynamic>),
-                )
-                .toList()
-          : null,
+      orderItemsId: orderItems,
       shopId: shopIdModel,
       deliveryType: json['delivery_type'] as String?,
       scheduleFor: json['schedule_for'] != null
           ? DateTime.parse(json['schedule_for'] as String)
           : null,
       subscriptionId: subscriptionIdStr,
+      subscription: subscriptionEntity,
       userId: userIdStr,
     );
   }
@@ -125,19 +149,20 @@ class OrderApiModel {
     return json;
   }
 
-  OrderEntity toEntity() {
-    return OrderEntity(
+  order_entities.OrderEntity toEntity() {
+    return order_entities.OrderEntity(
       id: id,
       orderItemsId: orderItemsId?.map((item) => item.toEntity()).toList(),
       shopId: shopId?.toEntity(),
       deliveryType: deliveryType,
       scheduleFor: scheduleFor,
       subscriptionId: subscriptionId,
+      subscription: subscription,
       userId: userId,
     );
   }
 
-  factory OrderApiModel.fromEntity(OrderEntity entity) {
+  factory OrderApiModel.fromEntity(order_entities.OrderEntity entity) {
     return OrderApiModel(
       id: entity.id,
       orderItemsId: entity.orderItemsId
@@ -149,11 +174,14 @@ class OrderApiModel {
       deliveryType: entity.deliveryType,
       scheduleFor: entity.scheduleFor,
       subscriptionId: entity.subscriptionId,
+      subscription: entity.subscription,
       userId: entity.userId,
     );
   }
 
-  static List<OrderEntity> toEntityList(List<OrderApiModel> models) {
+  static List<order_entities.OrderEntity> toEntityList(
+    List<OrderApiModel> models,
+  ) {
     return models.map((model) => model.toEntity()).toList();
   }
 }

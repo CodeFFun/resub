@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
+import 'package:resub/features/payment/presentation/pages/subscription_payment_screen.dart';
 import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
 import 'package:resub/features/subscription/presentation/pages/subscription_page_screen.dart';
 import 'package:resub/features/subscription/presentation/state/subscription_state.dart';
@@ -29,6 +31,12 @@ class _BottomOrderScreenState extends ConsumerState<BottomOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String checkRole() {
+      final userSession = ref.read(userSessionServiceProvider);
+      final role = userSession.getCurrentUSerRole();
+      return role ?? '';
+    }
+    
     final subscriptionState = ref.watch(subscriptionViewModelProvider);
     ref.listen(subscriptionViewModelProvider, (previous, next) {
       if (next.status == SubscriptionStatus.updated ||
@@ -50,6 +58,6 @@ class _BottomOrderScreenState extends ConsumerState<BottomOrderScreen> {
             subscriptionState.subscriptions != null
         ? subscriptionState.subscriptions!
         : <SubscriptionEntity>[];
-    return SubscriptionPageScreen(subscriptions: subs);
+    return checkRole() == 'customer' ? SubscriptionPageScreen(subscriptions: subs): SubscriptionPaymentScreen();
   }
 }
