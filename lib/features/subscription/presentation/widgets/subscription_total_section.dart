@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 
 class SubscriptionTotalSection extends StatelessWidget {
   final double totalPrice;
@@ -7,26 +8,35 @@ class SubscriptionTotalSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: appColors?.cardBackground ?? theme.cardColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             'Total Per Cycle (Selected):',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 14,
+              color:
+                  appColors?.mutedText ??
+                  colorScheme.onSurface.withValues(alpha: 0.5),
+            ),
           ),
           Text(
             '\$${totalPrice.toStringAsFixed(2)}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: colorScheme.onSurface,
             ),
           ),
         ],

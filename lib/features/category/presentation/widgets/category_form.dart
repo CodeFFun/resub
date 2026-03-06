@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
@@ -81,22 +82,26 @@ class _CategoryFormState extends State<CategoryForm> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         title: Text(
           widget.showBackButton ? 'Update Category' : 'Add New Category',
-          style: const TextStyle(
-            color: Colors.black87,
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.black87),
+          child: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
       ),
       body: SingleChildScrollView(
@@ -126,21 +131,24 @@ class _CategoryFormState extends State<CategoryForm> {
                 // Shops Checkboxes
                 Text(
                   'Select Shops',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: appColors?.cardBackground ?? theme.cardColor,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: appColors?.border ?? theme.dividerColor,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.1),
+                        color: Colors.black.withValues(alpha: 0.08),
                         spreadRadius: 1,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -163,14 +171,14 @@ class _CategoryFormState extends State<CategoryForm> {
                           },
                           title: Text(
                             widget.shops[index],
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Colors.black87,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           controlAffinity: ListTileControlAffinity.leading,
                           contentPadding: EdgeInsets.zero,
-                          activeColor: const Color(0xFF92400E),
+                          activeColor: colorScheme.primary,
                         ),
                       ),
                     ),
@@ -193,13 +201,13 @@ class _CategoryFormState extends State<CategoryForm> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF92400E)),
+                        side: BorderSide(color: colorScheme.primary),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Back',
                         style: TextStyle(
-                          color: Color(0xFF92400E),
+                          color: colorScheme.primary,
                           fontSize: 16,
                         ),
                       ),

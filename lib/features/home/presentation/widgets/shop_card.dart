@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/core/api/api_endpoints.dart';
 
 class ShopCard extends StatelessWidget {
@@ -19,6 +20,10 @@ class ShopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -27,10 +32,13 @@ class ShopCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: Colors.grey[300],
+                color: appColors?.cardBackground ?? theme.cardColor,
+                border: Border.all(
+                  color: appColors?.border ?? theme.dividerColor,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -46,18 +54,20 @@ class ShopCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: Colors.grey[300],
+                          color: appColors?.cardBackground ?? theme.cardColor,
                           child: Icon(
                             Icons.image_not_supported,
                             size: 32,
-                            color: Colors.grey[600],
+                            color:
+                                appColors?.mutedText ??
+                                colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         );
                       },
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
-                          color: Colors.grey[300],
+                          color: appColors?.cardBackground ?? theme.cardColor,
                           child: const Center(
                             child: CircularProgressIndicator(),
                           ),
@@ -73,13 +83,13 @@ class ShopCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.orange,
+                          color: appColors?.deepBrand ?? colorScheme.primary,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           category,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: colorScheme.onPrimary,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -94,10 +104,10 @@ class ShopCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: colorScheme.onSurface,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

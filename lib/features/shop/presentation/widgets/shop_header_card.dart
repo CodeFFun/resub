@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/core/api/api_endpoints.dart';
 import '../../domain/entities/shop_entity.dart';
 
@@ -9,6 +10,10 @@ class ShopHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -16,7 +21,7 @@ class ShopHeaderCard extends StatelessWidget {
           height: 280,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: appColors?.cardBackground ?? theme.cardColor,
             image: shop.shopBanner != null
                 ? DecorationImage(
                     image: NetworkImage(
@@ -35,11 +40,13 @@ class ShopHeaderCard extends StatelessWidget {
                     height: double.infinity,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(
+                        color: appColors?.cardBackground ?? theme.cardColor,
+                        child: Icon(
                           Icons.restaurant,
                           size: 80,
-                          color: Colors.grey,
+                          color:
+                              appColors?.mutedText ??
+                              colorScheme.onSurface.withValues(alpha: 0.65),
                         ),
                       );
                     },
@@ -68,7 +75,7 @@ class ShopHeaderCard extends StatelessWidget {
                     shop.name ?? 'Shop Name',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.orange,
+                      color: appColors?.deepBrand ?? colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -78,14 +85,22 @@ class ShopHeaderCard extends StatelessWidget {
                       Icon(
                         Icons.location_city,
                         size: 20,
-                        color: Colors.grey[600],
+                        color:
+                            appColors?.mutedText ??
+                            colorScheme.onSurface.withValues(alpha: 0.65),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           shop.addressLabel ?? shop.addressLine1 ?? 'Location',
                           style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey[600]),
+                              ?.copyWith(
+                                color:
+                                    appColors?.secondaryText ??
+                                    colorScheme.onSurface.withValues(
+                                      alpha: 0.8,
+                                    ),
+                              ),
                         ),
                       ),
                     ],

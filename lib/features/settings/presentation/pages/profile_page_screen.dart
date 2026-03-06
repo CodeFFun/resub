@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/app/theme/theme_mode_provider.dart';
 import 'package:resub/app/routes/app_routes.dart';
 import 'package:resub/core/api/api_endpoints.dart';
 import 'package:resub/core/services/storage/token_service.dart';
@@ -63,6 +65,12 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+    final themeMode = ref.watch(themeModeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
+
     ref.listen<ProfileState>(profileViewModelProvider, (previous, next) {
       if (next.status == ProfileStatus.loaded && next.user != null) {
         setState(() {
@@ -73,7 +81,7 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
     });
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -83,11 +91,14 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: appColors?.cardBackground ?? theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: appColors?.border ?? theme.dividerColor,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.1),
+                      color: Colors.black.withValues(alpha: 0.08),
                       spreadRadius: 1,
                       blurRadius: 4,
                       offset: const Offset(0, 2),
@@ -98,7 +109,7 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: Colors.grey.shade300,
+                      backgroundColor: colorScheme.surface,
                       backgroundImage:
                           _profilePicture != null && _profilePicture!.isNotEmpty
                           ? NetworkImage(
@@ -109,7 +120,9 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                           ? Icon(
                               Icons.person,
                               size: 35,
-                              color: Colors.grey.shade600,
+                              color:
+                                  appColors?.mutedText ??
+                                  colorScheme.onSurface.withValues(alpha: 0.7),
                             )
                           : null,
                     ),
@@ -120,10 +133,10 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                         children: [
                           Text(
                             _userName.isEmpty ? 'Loading...' : _userName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -178,6 +191,25 @@ class _ProfilePageScreenState extends ConsumerState<ProfilePageScreen> {
                 onTap: () {
                   AppRoutes.push(context, const ProductPageScreen());
                 },
+              ),
+
+              ProfileMenuItem(
+                icon: isDarkMode
+                    ? Icons.dark_mode_outlined
+                    : Icons.light_mode_outlined,
+                title: 'Appearance',
+                subtitle: isDarkMode
+                    ? 'Dark mode enabled'
+                    : 'Light mode enabled',
+                showChevron: false,
+                trailing: Switch.adaptive(
+                  value: isDarkMode,
+                  activeThumbColor: colorScheme.primary,
+                  activeTrackColor: colorScheme.primary.withValues(alpha: 0.35),
+                  onChanged: (value) {
+                    ref.read(themeModeProvider.notifier).toggleTheme(value);
+                  },
+                ),
               ),
 
               const SizedBox(height: 16),

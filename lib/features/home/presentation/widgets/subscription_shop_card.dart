@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/core/api/api_endpoints.dart';
 
 class SubscriptionShopCard extends StatelessWidget {
@@ -17,13 +18,18 @@ class SubscriptionShopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: appColors?.border ?? theme.dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -42,11 +48,13 @@ class SubscriptionShopCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: Colors.grey[400],
+                    color: appColors?.cardBackground ?? theme.cardColor,
                     child: Center(
                       child: Icon(
                         Icons.image_not_supported,
-                        color: Colors.grey[600],
+                        color:
+                            appColors?.mutedText ??
+                            colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   );
@@ -54,7 +62,7 @@ class SubscriptionShopCard extends StatelessWidget {
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Container(
-                    color: Colors.grey[300],
+                    color: appColors?.cardBackground ?? theme.cardColor,
                     child: const Center(child: CircularProgressIndicator()),
                   );
                 },
@@ -66,11 +74,11 @@ class SubscriptionShopCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: appColors?.cardBackground ?? theme.cardColor,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -94,13 +102,13 @@ class SubscriptionShopCard extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
+                    color: colorScheme.surface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     name,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),

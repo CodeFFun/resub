@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/order/domain/entities/order_entity.dart';
 import 'package:resub/features/order/presentation/state/order_state.dart';
 import 'package:resub/features/order/presentation/view_models/order_view_model.dart';
@@ -290,6 +291,10 @@ class _SubscriptionPageScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final hasSubscriptions = widget.subscriptions.isNotEmpty;
     final hasAnyItems = widget.subscriptions.any(
       (subscription) =>
@@ -345,12 +350,19 @@ class _SubscriptionPageScreenState
                   Icon(
                     Icons.subscriptions_outlined,
                     size: 64,
-                    color: Colors.grey[300],
+                    color:
+                        appColors?.mutedText ??
+                        colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'No active subscriptions',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color:
+                          appColors?.mutedText ??
+                          colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                   ),
                 ],
               ),
@@ -381,10 +393,14 @@ class _SubscriptionPageScreenState
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[100],
+                                  color:
+                                      appColors?.cardBackground ??
+                                      theme.cardColor,
                                   border: Border(
                                     bottom: BorderSide(
-                                      color: Colors.grey[300]!,
+                                      color:
+                                          appColors?.border ??
+                                          theme.dividerColor,
                                     ),
                                   ),
                                 ),
@@ -400,7 +416,10 @@ class _SubscriptionPageScreenState
                                             Icon(
                                               Icons.card_membership,
                                               size: 20,
-                                              color: Colors.grey[700],
+                                              color:
+                                                  appColors?.secondaryText ??
+                                                  colorScheme.onSurface
+                                                      .withValues(alpha: 0.7),
                                             ),
                                             const SizedBox(width: 8),
                                             Text(
@@ -431,14 +450,20 @@ class _SubscriptionPageScreenState
                                           Icon(
                                             Icons.info_outline,
                                             size: 18,
-                                            color: Colors.grey[600],
+                                            color:
+                                                appColors?.mutedText ??
+                                                colorScheme.onSurface
+                                                    .withValues(alpha: 0.5),
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Status: ${subscription.status}',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Colors.grey[700],
+                                              color:
+                                                  appColors?.secondaryText ??
+                                                  colorScheme.onSurface
+                                                      .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -452,14 +477,20 @@ class _SubscriptionPageScreenState
                                           Icon(
                                             Icons.repeat,
                                             size: 18,
-                                            color: Colors.grey[600],
+                                            color:
+                                                appColors?.mutedText ??
+                                                colorScheme.onSurface
+                                                    .withValues(alpha: 0.5),
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Remaining Cycles: ${subscription.remainingCycle}',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Colors.grey[700],
+                                              color:
+                                                  appColors?.secondaryText ??
+                                                  colorScheme.onSurface
+                                                      .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -472,14 +503,20 @@ class _SubscriptionPageScreenState
                                           Icon(
                                             Icons.calendar_today,
                                             size: 18,
-                                            color: Colors.grey[600],
+                                            color:
+                                                appColors?.mutedText ??
+                                                colorScheme.onSurface
+                                                    .withValues(alpha: 0.5),
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Started: ${_formatDate(subscription.startDate!)}',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Colors.grey[700],
+                                              color:
+                                                  appColors?.secondaryText ??
+                                                  colorScheme.onSurface
+                                                      .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -535,7 +572,11 @@ class _SubscriptionPageScreenState
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                    border: Border(
+                      top: BorderSide(
+                        color: appColors?.border ?? theme.dividerColor,
+                      ),
+                    ),
                   ),
                   child: SafeArea(
                     child: Column(

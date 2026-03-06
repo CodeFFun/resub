@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/core/api/api_endpoints.dart';
 import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 
@@ -10,6 +11,10 @@ class ShopListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final addressParts = <String>[];
     if (shop.addressLabel != null && shop.addressLabel!.isNotEmpty) {
       addressParts.add(shop.addressLabel!);
@@ -24,11 +29,12 @@ class ShopListCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors?.cardBackground ?? theme.cardColor,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: appColors?.border ?? theme.dividerColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: 0.08),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -45,7 +51,7 @@ class ShopListCard extends StatelessWidget {
             height: 70,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: Colors.grey.shade200,
+              color: colorScheme.surface,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -56,23 +62,27 @@ class ShopListCard extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) {
                         return Icon(
                           Icons.image_not_supported,
-                          color: Colors.grey.shade600,
+                          color:
+                              appColors?.mutedText ??
+                              colorScheme.onSurface.withValues(alpha: 0.7),
                         );
                       },
                     )
                   : Icon(
                       Icons.store_outlined,
                       size: 32,
-                      color: Colors.grey.shade600,
+                      color:
+                          appColors?.mutedText ??
+                          colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
             ),
           ),
           title: Text(
             shop.name ?? 'Unnamed Shop',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: colorScheme.onSurface,
             ),
           ),
           subtitle: Column(
@@ -81,18 +91,33 @@ class ShopListCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 shop.categoryName ?? 'No Category',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                style: TextStyle(
+                  fontSize: 13,
+                  color:
+                      appColors?.secondaryText ??
+                      colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 addressDisplay.isNotEmpty ? addressDisplay : 'No Address',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: TextStyle(
+                  fontSize: 12,
+                  color:
+                      appColors?.mutedText ??
+                      colorScheme.onSurface.withValues(alpha: 0.65),
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
-          trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
+          trailing: Icon(
+            Icons.chevron_right,
+            color:
+                appColors?.mutedText ??
+                colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
         ),
       ),
     );

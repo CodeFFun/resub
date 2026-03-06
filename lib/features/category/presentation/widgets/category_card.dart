@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
 
 class CategoryCard extends StatelessWidget {
@@ -30,6 +31,10 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Dismissible(
       key: Key(category.id ?? category.name!),
       onDismissed: (direction) {
@@ -54,11 +59,12 @@ class CategoryCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors?.cardBackground ?? theme.cardColor,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: appColors?.border ?? theme.dividerColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: 0.08),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -75,18 +81,22 @@ class CategoryCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.edit, size: 24, color: Color(0xFF92400E)),
+              child: Icon(
+                Icons.edit,
+                size: 24,
+                color: appColors?.deepBrand ?? colorScheme.primary,
+              ),
             ),
           ),
           title: Text(
             category.name!,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: colorScheme.onSurface,
             ),
           ),
           subtitle: Column(
@@ -95,14 +105,24 @@ class CategoryCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 category.description!,
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                style: TextStyle(
+                  fontSize: 14,
+                  color:
+                      appColors?.secondaryText ??
+                      colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 _getShopsDisplay(),
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                style: TextStyle(
+                  fontSize: 13,
+                  color:
+                      appColors?.mutedText ??
+                      colorScheme.onSurface.withValues(alpha: 0.65),
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

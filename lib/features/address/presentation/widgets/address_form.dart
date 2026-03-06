@@ -92,22 +92,25 @@ class _AddressFormState extends State<AddressForm> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         title: Text(
           widget.showBackButton ? 'Update Address' : 'Add New Address',
-          style: const TextStyle(
-            color: Colors.black87,
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.black87),
+          child: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
       ),
       body: SingleChildScrollView(
@@ -161,13 +164,13 @@ class _AddressFormState extends State<AddressForm> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF92400E)),
+                        side: BorderSide(color: colorScheme.primary),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Back',
                         style: TextStyle(
-                          color: Color(0xFF92400E),
+                          color: colorScheme.primary,
                           fontSize: 16,
                         ),
                       ),

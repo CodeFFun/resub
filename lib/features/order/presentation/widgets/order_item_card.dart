@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/order/domain/entities/order_entity.dart';
 import 'package:resub/features/order/domain/entities/order_item_entity.dart';
 
@@ -20,6 +21,10 @@ class OrderItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final productName = orderItem.productId?.name ?? 'Unknown Product';
     final shopName = order.shopId?.name ?? 'Unknown Shop';
     final quantity = orderItem.quantity ?? 0;
@@ -29,11 +34,19 @@ class OrderItemCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         border: Border.all(
-          color: isSelected ? Colors.blue[200]! : Colors.grey[200]!,
+          color: isSelected
+              ? (appColors?.deepBrand ?? colorScheme.primary).withValues(
+                  alpha: 0.4,
+                )
+              : (appColors?.border ?? theme.dividerColor),
           width: isSelected ? 2 : 1,
         ),
         borderRadius: BorderRadius.circular(12),
-        color: isSelected ? Colors.blue[50] : Colors.white,
+        color: isSelected
+            ? (appColors?.deepBrand ?? colorScheme.primary).withValues(
+                alpha: 0.08,
+              )
+            : (appColors?.cardBackground ?? theme.cardColor),
       ),
       child: Column(
         children: [
@@ -51,10 +64,10 @@ class OrderItemCard extends StatelessWidget {
                     children: [
                       Text(
                         productName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -62,7 +75,12 @@ class OrderItemCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'Shop: $shopName',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color:
+                              appColors?.mutedText ??
+                              colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -74,7 +92,10 @@ class OrderItemCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Divider(height: 1, color: Colors.grey[200]),
+            child: Divider(
+              height: 1,
+              color: appColors?.border ?? theme.dividerColor,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -86,23 +107,30 @@ class OrderItemCard extends StatelessWidget {
                   children: [
                     Text(
                       'Price: \$${unitPrice.toStringAsFixed(2)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.blue,
+                        color: appColors?.deepBrand ?? colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Quantity: $quantity',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color:
+                            appColors?.mutedText ??
+                            colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
                     ),
                   ],
                 ),
                 // Quantity Controls
                 Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(
+                      color: appColors?.border ?? theme.dividerColor,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -120,8 +148,14 @@ class OrderItemCard extends StatelessWidget {
                               Icons.remove,
                               size: 16,
                               color: quantity > 1
-                                  ? Colors.grey[700]
-                                  : Colors.grey[300],
+                                  ? (appColors?.secondaryText ??
+                                        colorScheme.onSurface.withValues(
+                                          alpha: 0.7,
+                                        ))
+                                  : (appColors?.mutedText ??
+                                        colorScheme.onSurface.withValues(
+                                          alpha: 0.3,
+                                        )),
                             ),
                           ),
                         ),
@@ -147,7 +181,9 @@ class OrderItemCard extends StatelessWidget {
                             child: Icon(
                               Icons.add,
                               size: 16,
-                              color: Colors.grey[700],
+                              color:
+                                  appColors?.secondaryText ??
+                                  colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         ),

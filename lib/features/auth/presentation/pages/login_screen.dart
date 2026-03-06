@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/routes/app_routes.dart';
 import 'package:resub/core/utils/snackbar_utils.dart';
-import 'package:resub/core/widgets/my_snackbar.dart';
 import 'package:resub/features/auth/presentation/state/auth_state.dart';
 import 'package:resub/features/auth/presentation/view_models/auth_view_model.dart';
 import 'package:resub/features/dashboard/presentation/pages/home_screen.dart';
@@ -13,10 +12,10 @@ import 'package:resub/core/widgets/my_input_form_field.dart';
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
   @override
-  ConsumerState<ConsumerStatefulWidget> createState()=> _LoginScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _LoginScreenState();
 }
-class _LoginScreenState extends ConsumerState<LoginScreen> {
 
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -29,7 +28,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-
     if (_formKey.currentState!.validate()) {
       await ref
           .read(authViewModelProvider.notifier)
@@ -40,10 +38,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-   void _navigateToSignup() {
+  void _navigateToSignup() {
     AppRoutes.push(context, const SignupScreen());
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -100,39 +97,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 40),
-                  MyButton(
-                    text: "Login",
-                    onPressed:_handleLogin,
-                  ),
+                  MyButton(text: "Login", onPressed: _handleLogin),
                   SizedBox(height: 60),
-                  Text("Or Login with"),
-                  SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Perform login action
-                        showMySnackBar(
-                          context: context,
-                          message: "Signup successful",
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        side: BorderSide(color: Colors.grey.shade400),
-                      ),
-                    ),
-                    child: Image.asset(
-                      'assets/icons/g.png',
-                      height: 25,
-                      width: 25,
-                    ),
-                  ),
                 ],
               ),
               Padding(
@@ -159,6 +125,4 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
-  
-  
 }

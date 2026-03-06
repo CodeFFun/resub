@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 
 class SelectAllItemsWidget extends StatelessWidget {
   final bool selectAll;
@@ -12,22 +13,28 @@ class SelectAllItemsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+        color: appColors?.cardBackground ?? theme.cardColor,
+        border: Border(
+          bottom: BorderSide(color: appColors?.border ?? theme.dividerColor),
+        ),
       ),
       child: Row(
         children: [
           Checkbox(value: selectAll, onChanged: (_) => onToggle()),
           const SizedBox(width: 12),
-          const Text(
+          Text(
             'Select All Items',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: colorScheme.onSurface,
             ),
           ),
         ],

@@ -5,6 +5,7 @@ import 'package:resub/core/utils/snackbar_utils.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
 import 'package:resub/features/auth/presentation/pages/first_onboarding_screen.dart';
+import 'package:resub/features/auth/presentation/pages/login_screen.dart';
 import 'package:resub/features/auth/presentation/state/auth_state.dart';
 import 'package:resub/features/auth/presentation/view_models/auth_view_model.dart';
 
@@ -43,7 +44,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   void _navigateToFirstOnboardingScreen() {
-    AppRoutes.pushReplacement(context, const FirstOnboardingScreen());
+    AppRoutes.pushReplacement(context, LoginScreen());
   }
 
   @override
@@ -108,22 +109,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   SizedBox(height: 25),
                   MyButton(text: "Register", onPressed: _handleSignup),
                   SizedBox(height: 25),
-                  Text("Or Register with"),
-                  SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        side: BorderSide(color: Colors.grey.shade400),
-                      ),
-                    ),
-                    child: Image.asset(
-                      'assets/icons/g.png',
-                      height: 25,
-                      width: 25,
-                    ),
-                  ),
                 ],
               ),
               Padding(

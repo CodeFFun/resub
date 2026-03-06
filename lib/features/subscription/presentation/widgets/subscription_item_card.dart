@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/subscription/domain/entities/product_info_entity.dart';
 import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
 
@@ -24,6 +25,10 @@ class SubscriptionItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final productName = product.name ?? 'Unknown Product';
     final quantity =
         product.quantity ?? subscription.subscriptionPlanId?.quantity ?? 0;
@@ -36,11 +41,19 @@ class SubscriptionItemCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         border: Border.all(
-          color: isSelected ? Colors.blue[200]! : Colors.grey[200]!,
+          color: isSelected
+              ? (appColors?.deepBrand ?? colorScheme.primary).withValues(
+                  alpha: 0.4,
+                )
+              : (appColors?.border ?? theme.dividerColor),
           width: isSelected ? 2 : 1,
         ),
         borderRadius: BorderRadius.circular(12),
-        color: isSelected ? Colors.blue[50] : Colors.white,
+        color: isSelected
+            ? (appColors?.deepBrand ?? colorScheme.primary).withValues(
+                alpha: 0.08,
+              )
+            : (appColors?.cardBackground ?? theme.cardColor),
       ),
       child: Column(
         children: [
@@ -58,10 +71,10 @@ class SubscriptionItemCard extends StatelessWidget {
                     children: [
                       Text(
                         productName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: colorScheme.onSurface,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -69,7 +82,12 @@ class SubscriptionItemCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'Base Price: \$${basePrice.toStringAsFixed(2)}',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color:
+                              appColors?.mutedText ??
+                              colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
                       ),
                     ],
                   ),
@@ -79,7 +97,10 @@ class SubscriptionItemCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Divider(height: 1, color: Colors.grey[200]),
+            child: Divider(
+              height: 1,
+              color: appColors?.border ?? theme.dividerColor,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -94,10 +115,10 @@ class SubscriptionItemCard extends StatelessWidget {
                       children: [
                         Text(
                           'Price/Cycle: \$${pricePerCycle.toStringAsFixed(2)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.blue,
+                            color: appColors?.deepBrand ?? colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -105,13 +126,16 @@ class SubscriptionItemCard extends StatelessWidget {
                           'Quantity: $quantity',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color:
+                                appColors?.mutedText ??
+                                colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
                     ),
                     // Quantity Controls
                     _buildControlWidget(
+                      context: context,
                       label: 'Qty',
                       value: quantity,
                       onDecrement: quantity > 1
@@ -134,7 +158,9 @@ class SubscriptionItemCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey[700],
+                            color:
+                                appColors?.secondaryText ??
+                                colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -142,13 +168,16 @@ class SubscriptionItemCard extends StatelessWidget {
                           'Every $frequency day${frequency > 1 ? 's' : ''}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color:
+                                appColors?.mutedText ??
+                                colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
                     ),
                     // Frequency Controls
                     _buildControlWidget(
+                      context: context,
                       label: 'Days',
                       value: frequency,
                       onDecrement: frequency > 1
@@ -170,7 +199,9 @@ class SubscriptionItemCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey[700],
+                            color:
+                                appColors?.secondaryText ??
+                                colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -178,15 +209,14 @@ class SubscriptionItemCard extends StatelessWidget {
                           isActive ? 'Active' : 'Inactive',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color:
+                                appColors?.mutedText ??
+                                colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
                     ),
-                    Switch(
-                      value: isActive,
-                      onChanged: onActiveChanged,
-                    ),
+                    Switch(value: isActive, onChanged: onActiveChanged),
                   ],
                 ),
               ],
@@ -198,25 +228,32 @@ class SubscriptionItemCard extends StatelessWidget {
   }
 
   Widget _buildControlWidget({
+    required BuildContext context,
     required String label,
     required int value,
     required VoidCallback? onDecrement,
     required VoidCallback onIncrement,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Column(
       children: [
         Text(
           label,
           style: TextStyle(
             fontSize: 11,
-            color: Colors.grey[600],
+            color:
+                appColors?.mutedText ??
+                colorScheme.onSurface.withValues(alpha: 0.5),
             fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 4),
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
+            border: Border.all(color: appColors?.border ?? theme.dividerColor),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -232,8 +269,10 @@ class SubscriptionItemCard extends StatelessWidget {
                       Icons.remove,
                       size: 16,
                       color: onDecrement != null
-                          ? Colors.grey[700]
-                          : Colors.grey[300],
+                          ? (appColors?.secondaryText ??
+                                colorScheme.onSurface.withValues(alpha: 0.7))
+                          : (appColors?.mutedText ??
+                                colorScheme.onSurface.withValues(alpha: 0.3)),
                     ),
                   ),
                 ),
@@ -256,7 +295,13 @@ class SubscriptionItemCard extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: onIncrement,
-                    child: Icon(Icons.add, size: 16, color: Colors.grey[700]),
+                    child: Icon(
+                      Icons.add,
+                      size: 16,
+                      color:
+                          appColors?.secondaryText ??
+                          colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
                   ),
                 ),
               ),

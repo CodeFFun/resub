@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/core/api/api_endpoints.dart';
 import 'package:resub/features/shop/domain/entities/shop_entity.dart';
 
@@ -16,6 +17,10 @@ class ShopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     // Build address display from label and line1
     final addressParts = <String>[];
     if (shop.addressLabel != null && shop.addressLabel!.isNotEmpty) {
@@ -50,11 +55,12 @@ class ShopCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors?.cardBackground ?? theme.cardColor,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: appColors?.border ?? theme.dividerColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: 0.08),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -73,7 +79,7 @@ class ShopCard extends StatelessWidget {
               height: 70,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: Colors.grey.shade200,
+                color: colorScheme.surface,
               ),
               child: shop.shopBanner != null && shop.shopBanner!.isNotEmpty
                   ? Image.network(
@@ -82,23 +88,27 @@ class ShopCard extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) {
                         return Icon(
                           Icons.image_not_supported,
-                          color: Colors.grey.shade600,
+                          color:
+                              appColors?.mutedText ??
+                              colorScheme.onSurface.withValues(alpha: 0.7),
                         );
                       },
                     )
                   : Icon(
                       Icons.store_outlined,
                       size: 32,
-                      color: Colors.grey.shade600,
+                      color:
+                          appColors?.mutedText ??
+                          colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
             ),
           ),
           title: Text(
             shop.name ?? 'Unnamed Shop',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: colorScheme.onSurface,
             ),
           ),
           subtitle: Column(
@@ -107,12 +117,22 @@ class ShopCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 shop.categoryName ?? 'No Category',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                style: TextStyle(
+                  fontSize: 13,
+                  color:
+                      appColors?.secondaryText ??
+                      colorScheme.onSurface.withValues(alpha: 0.8),
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 addressDisplay.isNotEmpty ? addressDisplay : 'No Address',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: TextStyle(
+                  fontSize: 12,
+                  color:
+                      appColors?.mutedText ??
+                      colorScheme.onSurface.withValues(alpha: 0.65),
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

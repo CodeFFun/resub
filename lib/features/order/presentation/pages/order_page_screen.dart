@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/order/domain/entities/order_entity.dart';
 import 'package:resub/features/order/domain/entities/order_item_entity.dart';
 import 'package:resub/features/order/presentation/view_models/order_view_model.dart';
@@ -139,7 +140,6 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
     return allSelectedItems;
   }
 
-
   List<Map<String, String>> _getSelectedItemsWithOrderIdMapping() {
     List<Map<String, String>> mapping = [];
 
@@ -194,9 +194,12 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
         );
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final hasOrders = widget.order.isNotEmpty;
     final hasAnyItems = widget.order.any(
       (order) => order.orderItemsId != null && order.orderItemsId!.isNotEmpty,
@@ -230,12 +233,19 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
                   Icon(
                     Icons.shopping_cart_outlined,
                     size: 64,
-                    color: Colors.grey[300],
+                    color:
+                        appColors?.mutedText ??
+                        colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'No items in order',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color:
+                          appColors?.mutedText ??
+                          colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                   ),
                 ],
               ),
@@ -268,10 +278,14 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[100],
+                                  color:
+                                      appColors?.cardBackground ??
+                                      theme.cardColor,
                                   border: Border(
                                     bottom: BorderSide(
-                                      color: Colors.grey[300]!,
+                                      color:
+                                          appColors?.border ??
+                                          theme.dividerColor,
                                     ),
                                   ),
                                 ),
@@ -288,7 +302,10 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
                                               Icon(
                                                 Icons.store,
                                                 size: 20,
-                                                color: Colors.grey[700],
+                                                color:
+                                                    appColors?.secondaryText ??
+                                                    colorScheme.onSurface
+                                                        .withValues(alpha: 0.7),
                                               ),
                                               const SizedBox(width: 8),
                                               Text(
@@ -319,14 +336,20 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
                                           Icon(
                                             Icons.local_shipping,
                                             size: 18,
-                                            color: Colors.grey[600],
+                                            color:
+                                                appColors?.mutedText ??
+                                                colorScheme.onSurface
+                                                    .withValues(alpha: 0.5),
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Delivery: ${order.deliveryType}',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Colors.grey[700],
+                                              color:
+                                                  appColors?.secondaryText ??
+                                                  colorScheme.onSurface
+                                                      .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -339,14 +362,20 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
                                           Icon(
                                             Icons.schedule,
                                             size: 18,
-                                            color: Colors.grey[600],
+                                            color:
+                                                appColors?.mutedText ??
+                                                colorScheme.onSurface
+                                                    .withValues(alpha: 0.5),
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Scheduled: ${_formatDate(order.scheduleFor!)}',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Colors.grey[700],
+                                              color:
+                                                  appColors?.secondaryText ??
+                                                  colorScheme.onSurface
+                                                      .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -389,7 +418,11 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                    border: Border(
+                      top: BorderSide(
+                        color: appColors?.border ?? theme.dividerColor,
+                      ),
+                    ),
                   ),
                   child: SafeArea(
                     child: Column(

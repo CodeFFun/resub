@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_mode_provider.dart';
 import 'package:resub/features/auth/presentation/pages/splash_screen.dart';
 import 'package:resub/app/theme/theme_data.dart';
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp(
       title: "ReSub",
       debugShowCheckedModeBanner: false,
-      theme: getApplicationTheme(),
+      theme: getApplicationLightTheme(),
+      darkTheme: getApplicationDarkTheme(),
+      themeMode: themeMode,
       home: SplashScreen(),
     );
   }

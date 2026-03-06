@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/app/routes/app_routes.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
 import 'package:resub/features/category/presentation/state/category_state.dart';
@@ -72,6 +73,10 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
       if (next.status == CategoryStatus.loaded) {
         setState(() {
@@ -87,6 +92,7 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
       }
     });
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Padding(
         padding: const EdgeInsets.only(top: 70.0),
         child: Column(
@@ -105,12 +111,12 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'What do you feel like today?',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -169,32 +175,48 @@ class _HomePageScreenState extends ConsumerState<HomePageScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Today\'s Hot & Exclusive Deals',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                          Text(
                             'Grab it before they are gone!',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color:
+                                  appColors?.secondaryText ??
+                                  colorScheme.onSurface.withValues(alpha: 0.8),
+                            ),
                           ),
                           const SizedBox(height: 12),
                           subscriptionShops.isEmpty
                               ? Container(
                                   height: 200,
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
+                                    color:
+                                        appColors?.cardBackground ??
+                                        theme.cardColor,
                                     borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color:
+                                          appColors?.border ??
+                                          theme.dividerColor,
+                                    ),
                                   ),
                                   child: Center(
                                     child: Text(
                                       'No subscription shops available',
                                       style: TextStyle(
-                                        color: Colors.grey[600],
+                                        color:
+                                            appColors?.secondaryText ??
+                                            colorScheme.onSurface.withValues(
+                                              alpha: 0.75,
+                                            ),
                                         fontSize: 14,
                                       ),
                                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 
 class CategoryCard extends StatelessWidget {
   final String name;
@@ -14,12 +15,17 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.grey[200],
+          color: appColors?.cardBackground ?? theme.cardColor,
+          border: Border.all(color: appColors?.border ?? theme.dividerColor),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -28,10 +34,10 @@ class CategoryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.black87,
+                color: colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),

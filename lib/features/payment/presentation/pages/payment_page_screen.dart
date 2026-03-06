@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/payment/domain/entities/payment_entity.dart';
 import 'package:resub/features/payment/presentation/state/payment_state.dart';
 import 'package:resub/features/payment/presentation/view_models/payment_view_model.dart';
@@ -43,6 +44,10 @@ class _PaymentPageScreenState extends ConsumerState<PaymentPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final paymentState = ref.watch(paymentViewModelProvider);
 
     ref.listen<PaymentState>(paymentViewModelProvider, (previous, next) {
@@ -71,12 +76,17 @@ class _PaymentPageScreenState extends ConsumerState<PaymentPageScreen> {
             ? const Center(child: CircularProgressIndicator())
             : payments.isEmpty
             ? ListView(
-                children: const [
-                  SizedBox(height: 220),
+                children: [
+                  const SizedBox(height: 220),
                   Center(
                     child: Text(
                       'No payment history found',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color:
+                            appColors?.mutedText ??
+                            colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
                     ),
                   ),
                 ],

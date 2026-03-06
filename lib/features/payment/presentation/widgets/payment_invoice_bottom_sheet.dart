@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/payment/domain/entities/payment_entity.dart';
 
 Future<void> showPaymentInvoiceBottomSheet({
@@ -39,7 +40,6 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
 
     // For each order, check either orderItemsId OR subscriptionId
     for (final order in payment.orders ?? const []) {
-
       // Path 1: Order has orderItemsId (products)
       if (order.orderItemsId != null && order.orderItemsId!.isNotEmpty) {
         final firstOrderItem = order.orderItemsId!.first;
@@ -77,8 +77,6 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
           final quantity = subscriptionProduct?.quantity ?? plan.quantity ?? 1;
           final unitPrice = (plan.pricePerCycle ?? 0).toDouble();
 
-        
-
           items.add(
             _InvoiceItem(
               productName: productName,
@@ -89,8 +87,6 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
         }
       }
     }
-
-  
 
     if (items.isNotEmpty) return items;
 
@@ -133,6 +129,10 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final amount = _formatAmount(payment.amount);
     final paidDate = _formatDate(payment.paidAt ?? payment.createdAt);
     final invoiceItems = _buildInvoiceItems();
@@ -144,9 +144,9 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
           maxHeight: MediaQuery.of(context).size.height * 0.88,
         ),
         padding: const EdgeInsets.all(18),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: appColors?.cardBackground ?? theme.cardColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -157,7 +157,9 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: Colors.black26,
+                    color:
+                        appColors?.mutedText ??
+                        colorScheme.onSurface.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
@@ -165,8 +167,8 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
               const SizedBox(height: 18),
               Text(
                 'Date: $paidDate',
-                style: const TextStyle(
-                  color: Colors.black,
+                style: TextStyle(
+                  color: colorScheme.onSurface,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -174,7 +176,12 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Payment ID: ${_displayOrFallback(payment.id, 'N/A')}',
-                style: const TextStyle(color: Colors.black54, fontSize: 12),
+                style: TextStyle(
+                  color:
+                      appColors?.mutedText ??
+                      colorScheme.onSurface.withValues(alpha: 0.5),
+                  fontSize: 12,
+                ),
               ),
               const SizedBox(height: 16),
               Row(
@@ -207,10 +214,10 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'ITEMS',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: colorScheme.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -219,12 +226,14 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.black12),
+                  border: Border.all(
+                    color: appColors?.border ?? theme.dividerColor,
+                  ),
                 ),
                 child: Column(
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 18,
                         vertical: 12,
                       ),
@@ -235,31 +244,31 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                             child: Text(
                               'Product Name',
                               style: TextStyle(
-                                color: Colors.black,
+                                color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Expanded(
                             flex: 2,
                             child: Text(
                               'Quantity',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Colors.black,
+                                color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Expanded(
                             flex: 3,
                             child: Text(
                               'Price',
                               textAlign: TextAlign.end,
                               style: TextStyle(
-                                color: Colors.black,
+                                color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -267,7 +276,10 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Colors.black12),
+                    Divider(
+                      height: 1,
+                      color: appColors?.border ?? theme.dividerColor,
+                    ),
                     ...invoiceItems.map(
                       (item) => Padding(
                         padding: const EdgeInsets.symmetric(
@@ -280,7 +292,7 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                               flex: 5,
                               child: Text(
                                 item.productName,
-                                style: const TextStyle(color: Colors.black),
+                                style: TextStyle(color: colorScheme.onSurface),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -289,7 +301,13 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                               child: Text(
                                 '${item.quantity}',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(color: Colors.black54),
+                                style: TextStyle(
+                                  color:
+                                      appColors?.mutedText ??
+                                      colorScheme.onSurface.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -298,8 +316,8 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                               child: Text(
                                 _formatAmount(item.price),
                                 textAlign: TextAlign.end,
-                                style: const TextStyle(
-                                  color: Colors.black,
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -316,8 +334,8 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: Text(
                   'Invoice Total: $amount',
-                  style: const TextStyle(
-                    color: Colors.black,
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                   ),
@@ -358,6 +376,10 @@ class _InvoiceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     final textAlign = alignRight ? TextAlign.right : TextAlign.left;
 
     return Column(
@@ -368,8 +390,8 @@ class _InvoiceSection extends StatelessWidget {
         Text(
           title,
           textAlign: textAlign,
-          style: const TextStyle(
-            color: Colors.black,
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 14,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
@@ -379,8 +401,8 @@ class _InvoiceSection extends StatelessWidget {
         Text(
           mainText,
           textAlign: textAlign,
-          style: const TextStyle(
-            color: Colors.black,
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -389,7 +411,12 @@ class _InvoiceSection extends StatelessWidget {
         Text(
           subText,
           textAlign: textAlign,
-          style: const TextStyle(color: Colors.black54, fontSize: 13),
+          style: TextStyle(
+            color:
+                appColors?.mutedText ??
+                colorScheme.onSurface.withValues(alpha: 0.5),
+            fontSize: 13,
+          ),
         ),
       ],
     );

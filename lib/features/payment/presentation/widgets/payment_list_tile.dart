@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/payment/domain/entities/payment_entity.dart';
 
 class PaymentListTile extends StatelessWidget {
@@ -22,11 +23,15 @@ class PaymentListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: appColors?.border ?? theme.dividerColor),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -37,21 +42,31 @@ class PaymentListTile extends StatelessWidget {
               children: [
                 Text(
                   _formatDate(payment.paidAt),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   userName ?? payment.userId?.userName ?? 'Unknown User',
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color:
+                        appColors?.mutedText ??
+                        colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   shopName ?? payment.shopId?.name ?? 'Unknown Shop',
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color:
+                        appColors?.mutedText ??
+                        colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
                 ),
               ],
             ),
@@ -62,12 +77,14 @@ class PaymentListTile extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: appColors?.cardBackground ?? theme.cardColor,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.visibility,
-                color: Colors.grey.shade700,
+                color:
+                    appColors?.secondaryText ??
+                    colorScheme.onSurface.withValues(alpha: 0.7),
                 size: 20,
               ),
             ),

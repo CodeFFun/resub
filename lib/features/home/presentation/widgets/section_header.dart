@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -14,6 +15,10 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -22,24 +27,29 @@ class SectionHeader extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 14,
+                color:
+                    appColors?.secondaryText ??
+                    colorScheme.onSurface.withValues(alpha: 0.8),
+              ),
             ),
           ],
         ),
         ElevatedButton(
           onPressed: onViewAll,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.cyan,
-            foregroundColor: Colors.white,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

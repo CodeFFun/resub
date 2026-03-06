@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/core/api/api_endpoints.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
@@ -57,11 +58,11 @@ class _ShopFormState extends State<ShopForm> {
       text: widget.initialShop?.pickupInfo ?? '',
     );
     _selectedCategoryId =
-      widget.initialShop?.categoryId ??
-      (widget.categories.isNotEmpty ? widget.categories.first.id : null);
+        widget.initialShop?.categoryId ??
+        (widget.categories.isNotEmpty ? widget.categories.first.id : null);
     _selectedAddressId =
-      widget.initialShop?.addressId ??
-      (widget.addresses.isNotEmpty ? widget.addresses.first.id : null);
+        widget.initialShop?.addressId ??
+        (widget.addresses.isNotEmpty ? widget.addresses.first.id : null);
     _acceptsSubscription = widget.initialShop?.acceptsSubscription ?? false;
     _shopBanner = widget.initialShop?.shopBanner;
   }
@@ -161,35 +162,41 @@ class _ShopFormState extends State<ShopForm> {
 
   @override
   Widget build(BuildContext context) {
-    final categoriesWithId =
-      widget.categories.where((category) => category.id != null).toList();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
+    final categoriesWithId = widget.categories
+        .where((category) => category.id != null)
+        .toList();
     final selectedCategoryId =
-      categoriesWithId.any((category) => category.id == _selectedCategoryId)
+        categoriesWithId.any((category) => category.id == _selectedCategoryId)
         ? _selectedCategoryId
         : (categoriesWithId.isNotEmpty ? categoriesWithId.first.id : null);
-    final addressesWithId =
-        widget.addresses.where((address) => address.id != null).toList();
+    final addressesWithId = widget.addresses
+        .where((address) => address.id != null)
+        .toList();
     final selectedAddressId =
         addressesWithId.any((address) => address.id == _selectedAddressId)
-            ? _selectedAddressId
-            : (addressesWithId.isNotEmpty ? addressesWithId.first.id : null);
+        ? _selectedAddressId
+        : (addressesWithId.isNotEmpty ? addressesWithId.first.id : null);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         title: Text(
           widget.showBackButton ? 'Update Shop' : 'Add New Shop',
-          style: const TextStyle(
-            color: Colors.black87,
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.black87),
+          child: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
       ),
       body: SingleChildScrollView(
@@ -220,8 +227,9 @@ class _ShopFormState extends State<ShopForm> {
                           right: 10,
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
+                            decoration: BoxDecoration(
+                              color:
+                                  appColors?.cardBackground ?? theme.cardColor,
                               shape: BoxShape.circle,
                             ),
                             child: GestureDetector(
@@ -257,12 +265,18 @@ class _ShopFormState extends State<ShopForm> {
                                 height: 150,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(12),
-                                  color: Colors.grey.shade300,
+                                  color:
+                                      appColors?.cardBackground ??
+                                      theme.cardColor,
                                 ),
                                 child: Icon(
                                   Icons.image_not_supported,
                                   size: 40,
-                                  color: Colors.grey.shade600,
+                                  color:
+                                      appColors?.mutedText ??
+                                      colorScheme.onSurface.withValues(
+                                        alpha: 0.7,
+                                      ),
                                 ),
                               );
                             },
@@ -273,8 +287,9 @@ class _ShopFormState extends State<ShopForm> {
                           right: 10,
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
+                            decoration: BoxDecoration(
+                              color:
+                                  appColors?.cardBackground ?? theme.cardColor,
                               shape: BoxShape.circle,
                             ),
                             child: GestureDetector(
@@ -300,12 +315,17 @@ class _ShopFormState extends State<ShopForm> {
                       height: 150,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        color: Colors.grey.shade300,
+                        color: appColors?.cardBackground ?? theme.cardColor,
+                        border: Border.all(
+                          color: appColors?.border ?? theme.dividerColor,
+                        ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.camera_alt,
                         size: 50,
-                        color: Colors.white,
+                        color:
+                            appColors?.mutedText ??
+                            colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -391,7 +411,9 @@ class _ShopFormState extends State<ShopForm> {
                       return DropdownMenuItem<String>(
                         value: address.id!,
                         child: Text(
-                          labelParts.isNotEmpty ? labelParts : 'Unnamed Address',
+                          labelParts.isNotEmpty
+                              ? labelParts
+                              : 'Unnamed Address',
                           overflow: TextOverflow.ellipsis,
                         ),
                       );
@@ -414,11 +436,14 @@ class _ShopFormState extends State<ShopForm> {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: appColors?.cardBackground ?? theme.cardColor,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: appColors?.border ?? theme.dividerColor,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.1),
+                        color: Colors.black.withValues(alpha: 0.08),
                         spreadRadius: 1,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -428,12 +453,12 @@ class _ShopFormState extends State<ShopForm> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Accepts Subscription',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       Switch(
@@ -443,7 +468,10 @@ class _ShopFormState extends State<ShopForm> {
                             _acceptsSubscription = value;
                           });
                         },
-                        activeThumbColor: const Color(0xFF92400E),
+                        activeThumbColor: colorScheme.primary,
+                        activeTrackColor: colorScheme.primary.withValues(
+                          alpha: 0.35,
+                        ),
                       ),
                     ],
                   ),
@@ -465,13 +493,13 @@ class _ShopFormState extends State<ShopForm> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF92400E)),
+                        side: BorderSide(color: colorScheme.primary),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Back',
                         style: TextStyle(
-                          color: Color(0xFF92400E),
+                          color: colorScheme.primary,
                           fontSize: 16,
                         ),
                       ),
