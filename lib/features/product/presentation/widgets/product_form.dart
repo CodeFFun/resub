@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
@@ -135,7 +136,7 @@ class _ProductFormState extends State<ProductForm> {
           widget.showBackButton ? 'Update Product' : 'Add New Product',
           style: TextStyle(
             color: colorScheme.onSurface,
-            fontSize: 18,
+            fontSize: context.rFont(18),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -146,7 +147,7 @@ class _ProductFormState extends State<ProductForm> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(context.rSpacing(20)),
           child: Form(
             key: _formKey,
             child: Column(
@@ -158,7 +159,7 @@ class _ProductFormState extends State<ProductForm> {
                   labelText: 'Product Name',
                   icon: const Icon(Icons.shopping_bag_outlined),
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Description
                 MyInputFormField(
@@ -166,7 +167,7 @@ class _ProductFormState extends State<ProductForm> {
                   labelText: 'Description',
                   icon: const Icon(Icons.description_outlined),
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Base Price
                 MyInputFormField(
@@ -177,7 +178,7 @@ class _ProductFormState extends State<ProductForm> {
                     decimal: true,
                   ),
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Stock Quantity
                 MyInputFormField(
@@ -186,7 +187,7 @@ class _ProductFormState extends State<ProductForm> {
                   icon: const Icon(Icons.inventory_2_outlined),
                   inputType: TextInputType.number,
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Discount
                 MyInputFormField(
@@ -197,23 +198,23 @@ class _ProductFormState extends State<ProductForm> {
                     decimal: true,
                   ),
                 ),
-                const SizedBox(height: 25),
+                SizedBox(height: context.rHeight(25)),
 
                 // Category (Radio buttons - single select)
                 Text(
                   'Select Category',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: context.rFont(16),
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.rHeight(12)),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(context.rSpacing(16)),
                   decoration: BoxDecoration(
                     color: appColors?.cardBackground ?? theme.cardColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(context.rRadius(12)),
                     border: Border.all(
                       color: appColors?.border ?? theme.dividerColor,
                     ),
@@ -231,7 +232,9 @@ class _ProductFormState extends State<ProductForm> {
                       widget.categories.length,
                       (index) => Padding(
                         padding: EdgeInsets.only(
-                          bottom: index < widget.categories.length - 1 ? 8 : 0,
+                          bottom: index < widget.categories.length - 1
+                              ? context.rHeight(8)
+                              : 0,
                         ),
                         child: RadioListTile<String>(
                           value: widget.categories[index].id ?? '',
@@ -244,7 +247,7 @@ class _ProductFormState extends State<ProductForm> {
                           title: Text(
                             widget.categories[index].name ?? 'Unnamed category',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: context.rFont(14),
                               color: colorScheme.onSurface,
                             ),
                           ),
@@ -255,22 +258,22 @@ class _ProductFormState extends State<ProductForm> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 25),
+                SizedBox(height: context.rHeight(25)),
 
                 Text(
                   'Select Shop',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: context.rFont(16),
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.rHeight(12)),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(context.rSpacing(16)),
                   decoration: BoxDecoration(
                     color: appColors?.cardBackground ?? theme.cardColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(context.rRadius(12)),
                     border: Border.all(
                       color: appColors?.border ?? theme.dividerColor,
                     ),
@@ -288,7 +291,9 @@ class _ProductFormState extends State<ProductForm> {
                       widget.shops.length,
                       (index) => Padding(
                         padding: EdgeInsets.only(
-                          bottom: index < widget.shops.length - 1 ? 8 : 0,
+                          bottom: index < widget.shops.length - 1
+                              ? context.rHeight(8)
+                              : 0,
                         ),
                         child: RadioListTile<String>(
                           value: widget.shops[index].id ?? '',
@@ -301,7 +306,7 @@ class _ProductFormState extends State<ProductForm> {
                           title: Text(
                             widget.shops[index].name ?? 'Unnamed shop',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: context.rFont(14),
                               color: colorScheme.onSurface,
                             ),
                           ),
@@ -312,7 +317,7 @@ class _ProductFormState extends State<ProductForm> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: context.rHeight(30)),
                 // Buttons
                 SizedBox(
                   width: double.infinity,
@@ -322,20 +327,22 @@ class _ProductFormState extends State<ProductForm> {
                   ),
                 ),
                 if (widget.showBackButton) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: context.rHeight(12)),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: colorScheme.primary),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(
+                          vertical: context.rHeight(12),
+                        ),
                       ),
                       child: Text(
                         'Back',
                         style: TextStyle(
                           color: colorScheme.primary,
-                          fontSize: 16,
+                          fontSize: context.rFont(16),
                         ),
                       ),
                     ),

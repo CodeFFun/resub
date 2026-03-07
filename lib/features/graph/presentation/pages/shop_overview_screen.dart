@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 import 'package:resub/features/graph/domain/entities/shop_dashboard_overview_entity.dart';
 import 'package:resub/features/graph/presentation/state/graph_state.dart';
 import 'package:resub/features/graph/presentation/view_models/graph_view_model.dart';
@@ -71,10 +72,13 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
             children: [
               Text(
                 state.errorMessage ?? 'Failed to load shop overview',
-                style: TextStyle(fontSize: 16, color: colorScheme.onSurface),
+                style: TextStyle(
+                  fontSize: context.rFont(16),
+                  color: colorScheme.onSurface,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: context.rHeight(14)),
               ElevatedButton(
                 onPressed: () {
                   ref.read(graphViewModelProvider.notifier).getShopOverview();
@@ -94,7 +98,7 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
           child: Text(
             'No overview data available',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: context.rFont(16),
               color: appColors?.secondaryText ?? colorScheme.onSurface,
             ),
           ),
@@ -119,31 +123,31 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(
-                top: 75,
-                left: 12,
-                right: 12,
-                bottom: 12,
+              padding: EdgeInsets.only(
+                top: context.rHeight(75),
+                left: context.rSpacing(12),
+                right: context.rSpacing(12),
+                bottom: context.rSpacing(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildCardsGrid(context, overview, cardCount),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.rHeight(16)),
                   if (isMobile)
                     Column(
                       children: [
                         DashboardSectionCard(
                           title: 'Revenue Trend',
-                          minHeight: 250,
+                          minHeight: context.rHeight(250),
                           child: RevenueTrendChart(
                             points: overview.revenueTrend,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: context.rHeight(16)),
                         DashboardSectionCard(
                           title: 'Payment Methods',
-                          minHeight: 250,
+                          minHeight: context.rHeight(250),
                           child: PaymentSplitChart(
                             splits: overview.paymentSplit,
                           ),
@@ -152,7 +156,7 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
                     )
                   else
                     SizedBox(
-                      height: 360,
+                      height: context.rHeight(360),
                       child: Row(
                         children: [
                           Expanded(
@@ -164,7 +168,7 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: context.rWidth(16)),
                           Expanded(
                             child: DashboardSectionCard(
                               title: 'Payment Methods',
@@ -176,12 +180,12 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
                         ],
                       ),
                     ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: context.rHeight(16)),
                   SizedBox(
-                    height: isMobile ? null : 300,
+                    height: isMobile ? null : context.rHeight(300),
                     child: DashboardSectionCard(
                       title: 'Top Products',
-                      minHeight: 240,
+                      minHeight: context.rHeight(240),
                       child: TopProductsRevenueChart(
                         products: overview.topProductsByRevenue,
                       ),
@@ -228,8 +232,8 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
       return Column(
         children: [
           for (int i = 0; i < cards.length; i++) ...[
-            SizedBox(height: 110, child: cards[i]),
-            if (i != cards.length - 1) const SizedBox(height: 12),
+            SizedBox(height: context.rHeight(110), child: cards[i]),
+            if (i != cards.length - 1) SizedBox(height: context.rHeight(12)),
           ],
         ],
       );
@@ -237,8 +241,8 @@ class _ShopOverviewScreenState extends ConsumerState<ShopOverviewScreen> {
 
     return GridView.count(
       crossAxisCount: cardCount,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
+      crossAxisSpacing: context.rWidth(16),
+      mainAxisSpacing: context.rHeight(16),
       shrinkWrap: true,
       childAspectRatio: 2.0,
       physics: const NeverScrollableScrollPhysics(),

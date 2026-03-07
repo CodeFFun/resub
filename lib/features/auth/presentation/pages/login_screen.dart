@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/routes/app_routes.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 import 'package:resub/core/utils/snackbar_utils.dart';
 import 'package:resub/features/auth/presentation/state/auth_state.dart';
 import 'package:resub/features/auth/presentation/view_models/auth_view_model.dart';
@@ -52,40 +53,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(context.rSpacing(20)),
+            child: Form(
+              key: _formKey,
+              child: Column(
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(top: 60),
+                    padding: EdgeInsets.only(top: context.rHeight(60)),
                     child: Text(
                       "Welcome! Glad to see you again",
                       style: TextStyle(
-                        fontSize: 35,
+                        fontSize: context.rFont(35),
                         color: Color.fromARGB(255, 113, 55, 0),
                       ),
                     ),
                   ),
-                  SizedBox(height: 60),
+                  SizedBox(height: context.rHeight(60)),
                   MyInputFormField(
                     controller: _emailController,
                     labelText: "Email",
                     inputType: TextInputType.emailAddress,
                     icon: Icon(Icons.email),
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: context.rHeight(15)),
                   MyInputFormField(
                     controller: _passwordController,
                     labelText: "Password",
                     icon: Icon(Icons.key),
                     obscureText: true,
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: context.rHeight(15)),
                   Align(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
@@ -96,30 +96,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 40),
+                  SizedBox(height: context.rHeight(40)),
                   MyButton(text: "Login", onPressed: _handleLogin),
-                  SizedBox(height: 60),
-                ],
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 40),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Don't have an account?"),
-                    GestureDetector(
-                      onTap: _navigateToSignup,
-                      child: Text(
-                        "Register Now",
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 113, 55, 0),
+                  SizedBox(height: context.rHeight(60)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Don't have an account?"),
+                      GestureDetector(
+                        onTap: _navigateToSignup,
+                        child: Text(
+                          "Register Now",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 113, 55, 0),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                  SizedBox(height: context.rHeight(40)),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

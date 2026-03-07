@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 import 'package:resub/features/payment/domain/entities/payment_entity.dart';
 
 Future<void> showPaymentInvoiceBottomSheet({
@@ -143,10 +144,12 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.88,
         ),
-        padding: const EdgeInsets.all(18),
+        padding: EdgeInsets.all(context.rSpacing(18)),
         decoration: BoxDecoration(
           color: appColors?.cardBackground ?? theme.cardColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(context.rRadius(20)),
+          ),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -154,36 +157,36 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
             children: [
               Center(
                 child: Container(
-                  width: 44,
-                  height: 5,
+                  width: context.rWidth(44),
+                  height: context.rHeight(5),
                   decoration: BoxDecoration(
                     color:
                         appColors?.mutedText ??
                         colorScheme.onSurface.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(context.rRadius(12)),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: context.rHeight(18)),
               Text(
                 'Date: $paidDate',
                 style: TextStyle(
                   color: colorScheme.onSurface,
-                  fontSize: 13,
+                  fontSize: context.rFont(13),
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: context.rHeight(4)),
               Text(
                 'Payment ID: ${_displayOrFallback(payment.id, 'N/A')}',
                 style: TextStyle(
                   color:
                       appColors?.mutedText ??
                       colorScheme.onSurface.withValues(alpha: 0.5),
-                  fontSize: 12,
+                  fontSize: context.rFont(12),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: context.rHeight(16)),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -198,7 +201,7 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                           'Status: ${_displayOrFallback(payment.status, 'pending')}',
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: context.rWidth(16)),
                   Expanded(
                     child: _InvoiceSection(
                       title: 'TO',
@@ -213,19 +216,19 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: context.rHeight(20)),
               Text(
                 'ITEMS',
                 style: TextStyle(
                   color: colorScheme.onSurface,
-                  fontSize: 18,
+                  fontSize: context.rFont(18),
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: context.rHeight(14)),
               Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(context.rRadius(10)),
                   border: Border.all(
                     color: appColors?.border ?? theme.dividerColor,
                   ),
@@ -233,9 +236,9 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.rSpacing(18),
+                        vertical: context.rSpacing(12),
                       ),
                       child: Row(
                         children: [
@@ -249,7 +252,7 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: context.rWidth(12)),
                           Expanded(
                             flex: 2,
                             child: Text(
@@ -261,7 +264,7 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: context.rWidth(12)),
                           Expanded(
                             flex: 3,
                             child: Text(
@@ -282,9 +285,9 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                     ),
                     ...invoiceItems.map(
                       (item) => Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.rSpacing(18),
+                          vertical: context.rSpacing(14),
                         ),
                         child: Row(
                           children: [
@@ -295,7 +298,7 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                                 style: TextStyle(color: colorScheme.onSurface),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: context.rWidth(12)),
                             Expanded(
                               flex: 2,
                               child: Text(
@@ -310,7 +313,7 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: context.rWidth(12)),
                             Expanded(
                               flex: 3,
                               child: Text(
@@ -329,14 +332,14 @@ class _PaymentInvoiceBottomSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: context.rHeight(18)),
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
                   'Invoice Total: $amount',
                   style: TextStyle(
                     color: colorScheme.onSurface,
-                    fontSize: 18,
+                    fontSize: context.rFont(18),
                     fontWeight: FontWeight.w800,
                   ),
                 ),

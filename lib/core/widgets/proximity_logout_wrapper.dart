@@ -5,6 +5,7 @@ import 'package:resub/core/services/storage/token_service.dart';
 import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/auth/presentation/pages/login_screen.dart';
 import 'package:resub/app/routes/app_routes.dart';
+import 'package:resub/app/my_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _proximityLogoutEnabledKey = 'proximity_logout_enabled';
@@ -57,53 +58,83 @@ class _ProximityLogoutWrapperState
     // Wait a bit to ensure providers are initialized
     await Future.delayed(const Duration(milliseconds: 500));
 
-    if (!mounted) return;
-
-    final isEnabled = ref.read(proximityLogoutEnabledProvider);
-    if (isEnabled) {
-      _startProximityListener();
+    if (!mounted) {
+      return;
     }
 
+    // Set initialized FIRST before checking enabled state
     setState(() {
       _isInitialized = true;
     });
+
+    // Now check if proximity should be enabled (after _isInitialized is set)
+    final isEnabled = ref.read(proximityLogoutEnabledProvider);
+    print(
+      '🔵 ProximityLogoutWrapper: Initial proximity logout enabled = $isEnabled',
+    );
+
+    if (isEnabled) {
+      _startProximityListener();
+    }
   }
 
   void _startProximityListener() {
-    _proximitySensorService.startListening(() {
-      _handleProximityLogout();
+    // Always stop first to ensure clean state
+    _proximitySensorService.stopListening().then((_) {
+      if (mounted) {
+        _proximitySensorService.startListening(() {
+          _handleProximityLogout();
+        });
+      }
     });
   }
 
   Future<void> _handleProximityLogout() async {
-    if (!mounted) return;
+    // Get the navigator context from the global key
+    final navigatorContext = navigatorKey.currentContext;
 
-    // Show a dialog to confirm logout or cancel it
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Proximity Logout'),
-        content: const Text(
-          'Proximity sensor detected. Do you want to logout?',
+    if (navigatorContext == null) {
+      return;
+    }
+
+    try {
+      // Show a dialog to confirm logout or cancel it
+      final shouldLogout = await showDialog<bool>(
+        context: navigatorContext,
+        barrierDismissible: false,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Proximity Logout'),
+          content: const Text(
+            'Proximity sensor detected. Do you want to logout?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Logout'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
+      );
 
-    if (shouldLogout == true && mounted) {
-      await _performLogout();
+      if (!mounted) return;
+
+      if (shouldLogout == true) {
+        await _performLogout();
+      } else {
+        ///
+      }
+    } catch (e) {
+      // Handle any errors (e.g., if context is invalid)
     }
   }
+
+  // void _restartProximityListener() {
+  //   // Removed - no longer needed
+  // }
 
   Future<void> _performLogout() async {
     final userSession = ref.read(userSessionServiceProvider);
@@ -114,22 +145,29 @@ class _ProximityLogoutWrapperState
 
     ref.invalidate(userSessionServiceProvider);
 
-    if (mounted) {
-      AppRoutes.pushReplacement(context, const LoginScreen());
+    // Use the global navigator key for navigation
+    final navigatorContext = navigatorKey.currentContext;
+    if (navigatorContext != null && mounted) {
+      AppRoutes.pushReplacement(navigatorContext, const LoginScreen());
     }
   }
 
   @override
   void dispose() {
-    _proximitySensorService.stopListening();
+    // Only stop if the sensor is actually running
+    if (_proximitySensorService.isEnabled) {
+      _proximitySensorService.stopListening();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     // Listen to changes in proximity logout enabled setting
+    // This will respond to changes from the settings screen
     ref.listen<bool>(proximityLogoutEnabledProvider, (previous, next) {
-      if (_isInitialized) {
+      // Only respond to changes after initialization to avoid double-start
+      if (_isInitialized && previous != null) {
         if (next) {
           _startProximityListener();
         } else {

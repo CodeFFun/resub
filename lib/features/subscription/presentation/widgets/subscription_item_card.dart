@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 import 'package:resub/features/subscription/domain/entities/product_info_entity.dart';
 import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
 
@@ -38,7 +39,10 @@ class SubscriptionItemCard extends StatelessWidget {
     final isActive = subscription.subscriptionPlanId?.active ?? false;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: context.rSpacing(12),
+        vertical: context.rSpacing(8),
+      ),
       decoration: BoxDecoration(
         border: Border.all(
           color: isSelected
@@ -48,7 +52,7 @@ class SubscriptionItemCard extends StatelessWidget {
               : (appColors?.border ?? theme.dividerColor),
           width: isSelected ? 2 : 1,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(context.rRadius(12)),
         color: isSelected
             ? (appColors?.deepBrand ?? colorScheme.primary).withValues(
                 alpha: 0.08,
@@ -58,7 +62,7 @@ class SubscriptionItemCard extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(context.rSpacing(12)),
             child: Row(
               children: [
                 Checkbox(
@@ -72,18 +76,18 @@ class SubscriptionItemCard extends StatelessWidget {
                       Text(
                         productName,
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: context.rFont(15),
                           fontWeight: FontWeight.w600,
                           color: colorScheme.onSurface,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: context.rHeight(4)),
                       Text(
                         'Base Price: \$${basePrice.toStringAsFixed(2)}',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: context.rFont(13),
                           color:
                               appColors?.mutedText ??
                               colorScheme.onSurface.withValues(alpha: 0.5),
@@ -96,14 +100,14 @@ class SubscriptionItemCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: context.rSpacing(12)),
             child: Divider(
               height: 1,
               color: appColors?.border ?? theme.dividerColor,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(context.rSpacing(12)),
             child: Column(
               children: [
                 // Price and Quantity controls
@@ -116,16 +120,16 @@ class SubscriptionItemCard extends StatelessWidget {
                         Text(
                           'Price/Cycle: \$${pricePerCycle.toStringAsFixed(2)}',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: context.rFont(14),
                             fontWeight: FontWeight.w600,
                             color: appColors?.deepBrand ?? colorScheme.primary,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: context.rHeight(4)),
                         Text(
                           'Quantity: $quantity',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: context.rFont(12),
                             color:
                                 appColors?.mutedText ??
                                 colorScheme.onSurface.withValues(alpha: 0.5),
@@ -145,7 +149,7 @@ class SubscriptionItemCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.rHeight(12)),
                 // Frequency controls
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -156,18 +160,18 @@ class SubscriptionItemCard extends StatelessWidget {
                         Text(
                           'Frequency',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: context.rFont(13),
                             fontWeight: FontWeight.w500,
                             color:
                                 appColors?.secondaryText ??
                                 colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: context.rHeight(4)),
                         Text(
                           'Every $frequency day${frequency > 1 ? 's' : ''}',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: context.rFont(12),
                             color:
                                 appColors?.mutedText ??
                                 colorScheme.onSurface.withValues(alpha: 0.5),
@@ -187,7 +191,7 @@ class SubscriptionItemCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.rHeight(12)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -197,18 +201,18 @@ class SubscriptionItemCard extends StatelessWidget {
                         Text(
                           'Status',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: context.rFont(13),
                             fontWeight: FontWeight.w500,
                             color:
                                 appColors?.secondaryText ??
                                 colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: context.rHeight(4)),
                         Text(
                           isActive ? 'Active' : 'Inactive',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: context.rFont(12),
                             color:
                                 appColors?.mutedText ??
                                 colorScheme.onSurface.withValues(alpha: 0.5),
@@ -243,31 +247,31 @@ class SubscriptionItemCard extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: context.rFont(11),
             color:
                 appColors?.mutedText ??
                 colorScheme.onSurface.withValues(alpha: 0.5),
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: context.rHeight(4)),
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: appColors?.border ?? theme.dividerColor),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(context.rRadius(8)),
           ),
           child: Row(
             children: [
               SizedBox(
-                width: 36,
-                height: 36,
+                width: context.rWidth(36),
+                height: context.rHeight(36),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: onDecrement,
                     child: Icon(
                       Icons.remove,
-                      size: 16,
+                      size: context.rIcon(16),
                       color: onDecrement != null
                           ? (appColors?.secondaryText ??
                                 colorScheme.onSurface.withValues(alpha: 0.7))
@@ -278,26 +282,26 @@ class SubscriptionItemCard extends StatelessWidget {
                 ),
               ),
               Container(
-                width: 40,
+                width: context.rWidth(40),
                 alignment: Alignment.center,
                 child: Text(
                   '$value',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: context.rFont(14),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               SizedBox(
-                width: 36,
-                height: 36,
+                width: context.rWidth(36),
+                height: context.rHeight(36),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: onIncrement,
                     child: Icon(
                       Icons.add,
-                      size: 16,
+                      size: context.rIcon(16),
                       color:
                           appColors?.secondaryText ??
                           colorScheme.onSurface.withValues(alpha: 0.7),

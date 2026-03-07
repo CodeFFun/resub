@@ -20,12 +20,36 @@ class ApiClient {
         baseUrl: ApiEndpoints.baseUrl,
         connectTimeout: ApiEndpoints.connectionTimeout,
         receiveTimeout: ApiEndpoints.receiveTimeout,
+        sendTimeout: ApiEndpoints.sendTimeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
       ),
     );
+
+    if (kDebugMode) {
+      print('🌐 API Client initialized');
+      print('   Base URL: ${ApiEndpoints.baseUrl}');
+      print('   Connection Timeout: ${ApiEndpoints.connectionTimeout}');
+      print('   Receive Timeout: ${ApiEndpoints.receiveTimeout}');
+      print('   Send Timeout: ${ApiEndpoints.sendTimeout}');
+    }
+
+    // Add logger first in debug mode for better visibility
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        PrettyDioLogger(
+          requestHeader: true,
+          requestBody: true,
+          responseBody: true,
+          responseHeader: true,
+          error: true,
+          compact: false,
+          maxWidth: 90,
+        ),
+      );
+    }
 
     // Add interceptors
     _dio.interceptors.add(_AuthInterceptor());
@@ -36,12 +60,16 @@ class ApiClient {
         dio: _dio,
         retries: 3,
         retryDelays: const [
-          Duration(seconds: 1),
           Duration(seconds: 2),
           Duration(seconds: 3),
+          Duration(seconds: 5),
         ],
         retryEvaluator: (error, attempt) {
           // Retry on connection errors and timeouts, not on 4xx/5xx
+          if (kDebugMode) {
+            print('🔄 Retry attempt $attempt for error: ${error.type}');
+            print('   Error message: ${error.message}');
+          }
           return error.type == DioExceptionType.connectionTimeout ||
               error.type == DioExceptionType.sendTimeout ||
               error.type == DioExceptionType.receiveTimeout ||
@@ -49,23 +77,55 @@ class ApiClient {
         },
       ),
     );
-
-    // Only add logger in debug mode
-    if (kDebugMode) {
-      _dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseBody: true,
-          responseHeader: false,
-          error: true,
-          compact: true,
-        ),
-      );
-    }
   }
 
   Dio get dio => _dio;
+
+  // Test server connectivity
+  Future<bool> testConnection() async {
+    try {
+      if (kDebugMode) {
+        print('🔍 Testing connection to: ${ApiEndpoints.baseUrl}');
+      }
+
+      final response = await _dio
+          .get(
+            '/health',
+            options: Options(
+              sendTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 5),
+            ),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw DioException(
+                requestOptions: RequestOptions(path: '/health'),
+                type: DioExceptionType.connectionTimeout,
+                message: 'Server not responding',
+              );
+            },
+          );
+
+      if (kDebugMode) {
+        print('✅ Server is reachable: ${response.statusCode}');
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Server connection failed:');
+        print('   Base URL: ${ApiEndpoints.baseUrl}');
+        print('   Error: $e');
+        print('   ');
+        print('💡 Possible issues:');
+        print('   1. Server is not running on ${ApiEndpoints.baseUrl}');
+        print('   2. Firewall is blocking the connection');
+        print('   3. Wrong IP address configured');
+        print('   4. Device and server are on different networks');
+      }
+      return false;
+    }
+  }
 
   // GET request
   Future<Response> get(
@@ -73,7 +133,22 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    return _dio.get(path, queryParameters: queryParameters, options: options);
+    try {
+      if (kDebugMode) {
+        print('🌐 Making GET request to: $path');
+      }
+      return await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: options,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('💥 GET request failed for: $path');
+        print('   Error: $e');
+      }
+      rethrow;
+    }
   }
 
   // POST request
@@ -83,12 +158,23 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
-    return _dio.post(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-      options: options,
-    );
+    try {
+      if (kDebugMode) {
+        print('🌐 Making POST request to: $path');
+      }
+      return await _dio.post(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('💥 POST request failed for: $path');
+        print('   Error: $e');
+      }
+      rethrow;
+    }
   }
 
   // PUT request
@@ -156,9 +242,91 @@ class ApiClient {
 class _AuthInterceptor extends Interceptor {
   final _storage = const FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
+  static const String _requestStartMsKey = 'requestStartMs';
+
+  // Endpoints that don't require authentication
+  static final _publicEndpoints = ['/auth/login', '/auth/register', '/health'];
+
+  bool _isPublicEndpoint(String path) {
+    return _publicEndpoints.any((endpoint) => path.contains(endpoint));
+  }
+
+  @override
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    options.extra[_requestStartMsKey] = DateTime.now().millisecondsSinceEpoch;
+
+    if (kDebugMode) {
+      print(
+        '🔐 Auth Interceptor: Processing ${options.method} ${options.path}',
+      );
+    }
+
+    // Skip token check for public endpoints
+    if (_isPublicEndpoint(options.path)) {
+      if (kDebugMode) {
+        print('   ℹ️  Public endpoint - no authentication required');
+      }
+      handler.next(options);
+      return;
+    }
+
+    final token = await _storage.read(key: _tokenKey);
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
+      if (kDebugMode) {
+        print('   ✓ Token added to request');
+      }
+    } else if (kDebugMode) {
+      print(
+        '   ⚠ No token found - request may fail if authentication required',
+      );
+    }
+
+    handler.next(options);
+  }
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    final startedAt = response.requestOptions.extra[_requestStartMsKey] as int?;
+    final durationMs = startedAt == null
+        ? null
+        : DateTime.now().millisecondsSinceEpoch - startedAt;
+
+    if (kDebugMode) {
+      print(
+        '✅ Response received: ${response.statusCode} for ${response.requestOptions.path}${durationMs == null ? '' : ' (${durationMs}ms)'}',
+      );
+    }
+    handler.next(response);
+  }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    final startedAt = err.requestOptions.extra[_requestStartMsKey] as int?;
+    final durationMs = startedAt == null
+        ? null
+        : DateTime.now().millisecondsSinceEpoch - startedAt;
+
+    if (kDebugMode) {
+      print('❌ Request Error: ${err.type}');
+      print('   URL: ${err.requestOptions.uri}');
+      if (durationMs != null) {
+        print('   Elapsed: ${durationMs}ms');
+      }
+      print('   Message: ${err.message}');
+      if (err.response != null) {
+        print('   Status Code: ${err.response?.statusCode}');
+        print('   Response: ${err.response?.data}');
+      } else {
+        print(
+          '   No HTTP response received. The failure happened before server replied (timeout/network/connectivity).',
+        );
+      }
+    }
+
     // Handle 401 Unauthorized - token expired
     if (err.response?.statusCode == 401) {
       // Clear token and redirect to login
