@@ -2,8 +2,10 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/core/error/failure.dart';
 import 'package:resub/core/services/connectivity/network_info.dart';
+import 'package:resub/features/subscription/data/datasources/local/subscription_plan_local_datasource.dart';
 import 'package:resub/features/subscription/data/datasources/remote/subscription_plan_remote_datasource.dart';
 import 'package:resub/features/subscription/data/datasources/subscription_plan_datasource.dart';
+import 'package:resub/features/subscription/data/models/subscription_plan_hive_model.dart';
 import 'package:resub/features/subscription/data/models/subscription_plan_model.dart';
 import 'package:resub/features/subscription/domain/entities/subscription_plan_entity.dart';
 import 'package:resub/features/subscription/domain/repositories/subscription_plan_repository.dart';
@@ -13,9 +15,13 @@ final subscriptionPlanRepositoryProvider =
       final subscriptionPlanRemoteDatasource = ref.read(
         subscriptionPlanRemoteDatasourceProvider,
       );
+      final subscriptionPlanLocalDatasource = ref.read(
+        subscriptionPlanLocalDatasourceProvider,
+      );
       final networkInfo = ref.read(networkInfoProvider);
       return SubscriptionPlanRepository(
         subscriptionPlanRemoteDatasource: subscriptionPlanRemoteDatasource,
+        subscriptionPlanLocalDatasource: subscriptionPlanLocalDatasource,
         networkInfo: networkInfo,
       );
     });
@@ -23,12 +29,15 @@ final subscriptionPlanRepositoryProvider =
 class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
   final NetworkInfo _networkInfo;
   final ISubscriptionPlanRemoteDatasource _subscriptionPlanRemoteDatasource;
+  final ISubscriptionPlanLocalDatasource _subscriptionPlanLocalDatasource;
 
   SubscriptionPlanRepository({
     required NetworkInfo networkInfo,
     required ISubscriptionPlanRemoteDatasource subscriptionPlanRemoteDatasource,
+    required ISubscriptionPlanLocalDatasource subscriptionPlanLocalDatasource,
   }) : _networkInfo = networkInfo,
-       _subscriptionPlanRemoteDatasource = subscriptionPlanRemoteDatasource;
+       _subscriptionPlanRemoteDatasource = subscriptionPlanRemoteDatasource,
+       _subscriptionPlanLocalDatasource = subscriptionPlanLocalDatasource;
 
   @override
   Future<Either<Failure, SubscriptionPlanEntity>> createSubscriptionPlan(
@@ -41,12 +50,28 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
         );
         final model = await _subscriptionPlanRemoteDatasource
             .createSubscriptionPlan(apiModel);
+        // Sync to local
+        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
+          model.toEntity(),
+        );
+        await _subscriptionPlanLocalDatasource.createSubscriptionPlan(
+          hiveModel,
+        );
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
       }
     } else {
-      return const Left(ApiFailure(message: 'No internet connection'));
+      try {
+        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
+          subscriptionPlanEntity,
+        );
+        final model = await _subscriptionPlanLocalDatasource
+            .createSubscriptionPlan(hiveModel);
+        return Right(model.toEntity());
+      } catch (e) {
+        return Left(LocalDatabaseFailure(message: e.toString()));
+      }
     }
   }
 
@@ -56,12 +81,20 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       try {
         final result = await _subscriptionPlanRemoteDatasource
             .deleteSubscriptionPlan(id);
+        // Sync to local
+        await _subscriptionPlanLocalDatasource.deleteSubscriptionPlan(id);
         return Right(result);
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
       }
     } else {
-      return const Left(ApiFailure(message: 'No internet connection'));
+      try {
+        final result = await _subscriptionPlanLocalDatasource
+            .deleteSubscriptionPlan(id);
+        return Right(result);
+      } catch (e) {
+        return Left(LocalDatabaseFailure(message: e.toString()));
+      }
     }
   }
 
@@ -73,12 +106,30 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       try {
         final model = await _subscriptionPlanRemoteDatasource
             .getSubscriptionPlanById(id);
+        // Sync to local
+        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
+          model.toEntity(),
+        );
+        await _subscriptionPlanLocalDatasource.createSubscriptionPlan(
+          hiveModel,
+        );
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
       }
     } else {
-      return const Left(ApiFailure(message: 'No internet connection'));
+      try {
+        final model = await _subscriptionPlanLocalDatasource
+            .getSubscriptionPlanById(id);
+        if (model == null) {
+          return const Left(
+            LocalDatabaseFailure(message: 'Subscription plan not found'),
+          );
+        }
+        return Right(model.toEntity());
+      } catch (e) {
+        return Left(LocalDatabaseFailure(message: e.toString()));
+      }
     }
   }
 
@@ -89,12 +140,27 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       try {
         final models = await _subscriptionPlanRemoteDatasource
             .getSubscriptionPlansByShopId(shopId);
+        // Sync to local
+        for (final model in models) {
+          final hiveModel = SubscriptionPlanHiveModel.fromEntity(
+            model.toEntity(),
+          );
+          await _subscriptionPlanLocalDatasource.createSubscriptionPlan(
+            hiveModel,
+          );
+        }
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
       }
     } else {
-      return const Left(ApiFailure(message: 'No internet connection'));
+      try {
+        final models = await _subscriptionPlanLocalDatasource
+            .getSubscriptionPlansByShopId(shopId);
+        return Right(models.map((model) => model.toEntity()).toList());
+      } catch (e) {
+        return Left(LocalDatabaseFailure(message: e.toString()));
+      }
     }
   }
 
@@ -110,12 +176,35 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
         );
         final model = await _subscriptionPlanRemoteDatasource
             .updateSubscriptionPlan(id, apiModel);
+        // Sync to local
+        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
+          model.toEntity(),
+        );
+        await _subscriptionPlanLocalDatasource.updateSubscriptionPlan(
+          id,
+          hiveModel,
+        );
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
       }
     } else {
-      return const Left(ApiFailure(message: 'No internet connection'));
+      try {
+        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
+          subscriptionPlanEntity,
+        );
+        final result = await _subscriptionPlanLocalDatasource
+            .updateSubscriptionPlan(id, hiveModel);
+        if (result) {
+          return Right(subscriptionPlanEntity);
+        } else {
+          return const Left(
+            LocalDatabaseFailure(message: 'Failed to update subscription plan'),
+          );
+        }
+      } catch (e) {
+        return Left(LocalDatabaseFailure(message: e.toString()));
+      }
     }
   }
 }

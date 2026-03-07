@@ -23,7 +23,7 @@ class NetworkInfo implements INetworkInfo {
       return false;
     }
     // return await _isInternet();
-    return true;
+    return false;
   }
 
   Future<bool> _isInternet() async {

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/core/services/hive/hive_service.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/auth/data/datasources/auth_datasource.dart';
 import 'package:resub/features/user/data/models/user_hive_model.dart';
 
@@ -7,32 +8,49 @@ import 'package:resub/features/user/data/models/user_hive_model.dart';
 
 final authLocalDatasourceProvider = Provider<IAuthLocalDatasource>((ref) {
   final hiveService = ref.watch(hiveServiceProvider);
-  return AuthLocalDatasource(hiveService: hiveService);
+  final userSessionService = ref.watch(userSessionServiceProvider);
+  return AuthLocalDatasource(
+    hiveService: hiveService,
+    userSessionService: userSessionService,
+  );
 });
 
 class AuthLocalDatasource implements IAuthLocalDatasource {
+  final UserSessionService _userSessionService;
   final HiveService _hiveService;
 
-  AuthLocalDatasource({required HiveService hiveService})
-    : _hiveService = hiveService;
+  AuthLocalDatasource({
+    required HiveService hiveService,
+    required UserSessionService userSessionService,
+  }) : _hiveService = hiveService,
+       _userSessionService = userSessionService;
 
   @override
-  Future<UserHiveModel> getCurrentUser(String userId) {
+  Future<UserHiveModel?> getCurrentUser(String userId) {
     try {
       final user = _hiveService.getCurrentUser(userId);
       return Future.value(user);
     } catch (e) {
-      throw Exception('Get current user failed');
+      return Future.value(null);
     }
   }
 
   @override
-  Future<UserHiveModel> login(String email, String password) async {
+  Future<UserHiveModel?> login(String email, String password) async {
     try {
       final user = _hiveService.login(email, password);
-      return Future.value(user);
+      if (user != null) {
+        await _userSessionService.saveUserSession(
+          userId: user.userId ?? '',
+          email: user.email ?? '',
+          username: user.userName ?? '',
+          role: user.role ?? '',
+        );
+        return Future.value(user);
+      }
+      return Future.value(null);
     } catch (e) {
-      throw Exception('Login failed');
+      return Future.value(null);
     }
   }
 
