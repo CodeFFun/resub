@@ -2,19 +2,22 @@ import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:resub/core/api/api_endpoints.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Provider for ApiClient
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
+  final prefs = ref.read(sharedPreferencesProvider);
+  return ApiClient(prefs: prefs);
 });
 
 class ApiClient {
   late final Dio _dio;
+  final SharedPreferences _prefs;
 
-  ApiClient() {
+  ApiClient({required SharedPreferences prefs}) : _prefs = prefs {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoints.baseUrl,
@@ -52,7 +55,7 @@ class ApiClient {
     }
 
     // Add interceptors
-    _dio.interceptors.add(_AuthInterceptor());
+    _dio.interceptors.add(_AuthInterceptor(prefs: _prefs));
 
     // Auto retry on network failures
     _dio.interceptors.add(
@@ -240,9 +243,11 @@ class ApiClient {
 
 // Auth Interceptor to add JWT token to requests
 class _AuthInterceptor extends Interceptor {
-  final _storage = const FlutterSecureStorage();
+  final SharedPreferences _prefs;
   static const String _tokenKey = 'auth_token';
   static const String _requestStartMsKey = 'requestStartMs';
+
+  _AuthInterceptor({required SharedPreferences prefs}) : _prefs = prefs;
 
   // Endpoints that don't require authentication
   static final _publicEndpoints = ['/auth/login', '/auth/register', '/health'];
@@ -273,7 +278,8 @@ class _AuthInterceptor extends Interceptor {
       return;
     }
 
-    final token = await _storage.read(key: _tokenKey);
+    // Read token from SharedPreferences
+    final token = _prefs.getString(_tokenKey);
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
       if (kDebugMode) {
@@ -325,13 +331,6 @@ class _AuthInterceptor extends Interceptor {
           '   No HTTP response received. The failure happened before server replied (timeout/network/connectivity).',
         );
       }
-    }
-
-    // Handle 401 Unauthorized - token expired
-    if (err.response?.statusCode == 401) {
-      // Clear token and redirect to login
-      _storage.delete(key: _tokenKey);
-      // You can add navigation logic here or use a callback
     }
     handler.next(err);
   }

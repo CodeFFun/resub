@@ -1,6 +1,9 @@
 import 'package:hive/hive.dart';
 import 'package:resub/core/constants/hive_table_constants.dart';
 import 'package:resub/features/order/domain/entities/order_entity.dart';
+import 'package:resub/features/order/data/models/order_item_hive_model.dart';
+import 'package:resub/features/order/domain/entities/order_item_entity.dart';
+import 'package:resub/features/subscription/data/models/subscription_hive_model.dart';
 
 part 'order_hive_model.g.dart';
 
@@ -30,6 +33,10 @@ class OrderHiveModel extends HiveObject {
   @HiveField(7)
   final String? userId;
 
+  // Non-persisted fields for populated relationships
+  List<OrderItemHiveModel>? _orderItems;
+  SubscriptionHiveModel? _subscription;
+
   OrderHiveModel({
     this.id,
     this.orderItemsIds,
@@ -39,10 +46,39 @@ class OrderHiveModel extends HiveObject {
     this.scheduleFor,
     this.subscriptionId,
     this.userId,
-  });
+    List<OrderItemHiveModel>? orderItems,
+    SubscriptionHiveModel? subscription,
+  }) : _orderItems = orderItems,
+       _subscription = subscription;
+
+  // Getters for populated relationships
+  List<OrderItemHiveModel>? get orderItems => _orderItems;
+  SubscriptionHiveModel? get subscription => _subscription;
+
+  // Setters for populated relationships
+  void setOrderItems(List<OrderItemHiveModel>? items) => _orderItems = items;
+  void setSubscription(SubscriptionHiveModel? sub) => _subscription = sub;
 
   // From entity
   factory OrderHiveModel.fromEntity(OrderEntity entity) {
+    // Convert OrderItemEntity objects to OrderItemHiveModel for population
+    List<OrderItemHiveModel>? orderItems;
+    if (entity.orderItemsId != null && entity.orderItemsId!.isNotEmpty) {
+      orderItems = entity.orderItemsId!
+          .map(
+            (item) => OrderItemHiveModel(
+              id: item.id,
+              productId: item.productId?.id,
+              productName: item.productId?.name,
+              productBasePrice: item.productId?.basePrice,
+              productDiscount: item.productId?.discount,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+            ),
+          )
+          .toList();
+    }
+
     return OrderHiveModel(
       id: entity.id,
       orderItemsIds: entity.orderItemsId
@@ -55,6 +91,7 @@ class OrderHiveModel extends HiveObject {
       scheduleFor: entity.scheduleFor,
       subscriptionId: entity.subscriptionId,
       userId: entity.userId,
+      orderItems: orderItems,
     );
   }
 
@@ -62,12 +99,16 @@ class OrderHiveModel extends HiveObject {
   OrderEntity toEntity() {
     return OrderEntity(
       id: id,
-      orderItemsId: [], // Order items should be fetched separately
+      orderItemsId: _orderItems != null
+          ? _orderItems!.map((item) => item.toEntity()).toList()
+          : (orderItemsIds != null && orderItemsIds!.isNotEmpty)
+          ? orderItemsIds!.map((id) => OrderItemEntity(id: id)).toList()
+          : [],
       shopId: shopId != null ? ShopInfo(id: shopId, name: shopName) : null,
       deliveryType: deliveryType,
       scheduleFor: scheduleFor,
       subscriptionId: subscriptionId,
-      subscription: null, // Subscription should be fetched separately
+      subscription: _subscription?.toEntity(),
       userId: userId,
     );
   }

@@ -1,6 +1,9 @@
 import 'package:hive/hive.dart';
 import 'package:resub/core/constants/hive_table_constants.dart';
+import 'package:resub/features/shop/data/models/shop_hive_model.dart';
 import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
+import 'package:resub/features/subscription/data/models/subscription_plan_hive_model.dart';
+import 'package:resub/features/user/data/models/user_hive_model.dart';
 
 part 'subscription_hive_model.g.dart';
 
@@ -36,6 +39,11 @@ class SubscriptionHiveModel extends HiveObject {
   @HiveField(9)
   final DateTime? updatedAt;
 
+  // Non-persisted fields for populated relationships
+  SubscriptionPlanHiveModel? _subscriptionPlan;
+  ShopHiveModel? _shop;
+  UserHiveModel? _user;
+
   SubscriptionHiveModel({
     this.id,
     this.status,
@@ -48,6 +56,19 @@ class SubscriptionHiveModel extends HiveObject {
     this.createdAt,
     this.updatedAt,
   });
+
+  // Setters for populated relationships
+  void setSubscriptionPlan(SubscriptionPlanHiveModel? plan) {
+    _subscriptionPlan = plan;
+  }
+
+  void setShop(ShopHiveModel? shop) {
+    _shop = shop;
+  }
+
+  void setUser(UserHiveModel? user) {
+    _user = user;
+  }
 
   // From entity
   factory SubscriptionHiveModel.fromEntity(SubscriptionEntity entity) {
@@ -65,14 +86,13 @@ class SubscriptionHiveModel extends HiveObject {
     );
   }
 
-  // To entity
+  // To entity - returns populated objects if available
   SubscriptionEntity toEntity() {
     return SubscriptionEntity(
       id: id,
       status: status,
       remainingCycle: remainingCycle,
-      subscriptionPlanId:
-          null, // Subscription plan should be fetched separately
+      subscriptionPlanId: _subscriptionPlan?.toEntity(),
       startDate: startDate,
       shopId: shopId,
       userId: userId,

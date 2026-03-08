@@ -276,7 +276,7 @@ packages:
   esewa_flutter_sdk:
     dependency: "direct main"
     description:
-      path: "esewa/esewasdk/esewasdk/esewa_flutter_sdk"
+      path: "esewa/esewa_sdk/esewa_sdk/esewa_flutter_sdk"
       relative: true
     source: path
     version: "2.5.4+24"

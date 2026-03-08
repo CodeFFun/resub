@@ -4,7 +4,7 @@ import 'package:resub/features/category/presentation/widgets/category_form.dart'
 
 class CreateCategoryScreen extends StatelessWidget {
   final Function(CategoryEntity) onCategoryCreated;
-  final List<String> shops;
+  final List<Map<String, String>> shops;
 
   const CreateCategoryScreen({
     super.key,

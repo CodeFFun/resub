@@ -23,11 +23,19 @@ class HiveSeeder {
 
   static Future<void> seedDatabase() async {
     _ensureBoxesOpen();
+
+    // Check if database is already seeded
+    final userBox = Hive.box<UserHiveModel>(HiveTableConstant.userTable);
+    if (userBox.isNotEmpty) {
+      print('HiveSeeder: Database already seeded, skipping...');
+      return;
+    }
+
+    print('HiveSeeder: Seeding database...');
     final random = Random(42);
 
     await deleteSeededData();
 
-    final userBox = Hive.box<UserHiveModel>(HiveTableConstant.userTable);
     final addressBox = Hive.box<AddressHiveModel>(
       HiveTableConstant.addressTable,
     );
@@ -333,7 +341,7 @@ class HiveSeeder {
           productNames: <String>[seed.product.name],
           productQuantities: <int>[quantity],
           productBasePrices: <num>[seed.product.basePrice],
-          productDiscounts: <int>[seed.product.discount.round()],
+          productDiscounts: <double>[seed.product.discount.round().toDouble()],
           quantity: quantity,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
@@ -469,6 +477,11 @@ class HiveSeeder {
       for (final subscription in updatedSubscriptions)
         subscription.id!: subscription,
     });
+
+    print('HiveSeeder: Database seeding completed successfully');
+    print('  - ${userBox.length} users');
+    print('  - ${orderBox.length} orders');
+    print('  - ${orderItemBox.length} order items');
   }
 
   static Future<void> deleteSeededData() async {

@@ -20,12 +20,24 @@ class OrderItemLocalDatasource implements IOrderItemLocalDatasource {
   Future<OrderItemHiveModel> createOrderItem(
     OrderItemHiveModel orderItemModel,
   ) async {
-    return await _hiveService.createOrderItem(orderItemModel);
+    try {
+      final createdOrderItem = await _hiveService.createOrderItem(
+        orderItemModel,
+      );
+      return createdOrderItem;
+    } catch (e) {
+      return Future.error('Failed to create order item: $e');
+    }
   }
 
   @override
   Future<bool> deleteOrderItem(String id) async {
-    return await _hiveService.deleteOrderItem(id);
+    try {
+      final success = await _hiveService.deleteOrderItem(id);
+      return success;
+    } catch (e) {
+      return Future.error('Failed to delete order item: $e');
+    }
   }
 
   @override
@@ -35,17 +47,32 @@ class OrderItemLocalDatasource implements IOrderItemLocalDatasource {
 
   @override
   Future<List<OrderItemHiveModel>> getAllOrderItems() async {
-    return _hiveService.getAllOrderItems();
+    try {
+      final orderItems = _hiveService.getAllOrderItems();
+      return orderItems;
+    } catch (e) {
+      return Future.error('Failed to fetch order items: $e');
+    }
   }
 
   @override
   Future<OrderItemHiveModel?> getOrderItemById(String id) async {
-    return _hiveService.getOrderItemById(id);
+    try {
+      final orderItem = _hiveService.getOrderItemById(id);
+      return orderItem;
+    } catch (e) {
+      return Future.error('Failed to fetch order item by id: $e');
+    }
   }
 
   @override
   Future<List<OrderItemHiveModel>> getOrderItemsByIds(List<String> ids) async {
-    return _hiveService.getOrderItemsByIds(ids);
+    try {
+      final orderItems = _hiveService.getOrderItemsByIds(ids);
+      return orderItems;
+    } catch (e) {
+      return Future.error('Failed to fetch order items by ids: $e');
+    }
   }
 
   @override
@@ -53,6 +80,11 @@ class OrderItemLocalDatasource implements IOrderItemLocalDatasource {
     String id,
     OrderItemHiveModel orderItemModel,
   ) async {
-    return await _hiveService.updateOrderItem(id, orderItemModel);
+    try {
+      final success = await _hiveService.updateOrderItem(id, orderItemModel);
+      return success;
+    } catch (e) {
+      return Future.error('Failed to update order item: $e');
+    }
   }
 }

@@ -182,6 +182,7 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
     });
     ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
       if (next.status == CategoryStatus.loaded && next.categories != null) {
+        print(next.categories);
         setState(() {
           _categories = next.categories!;
         });

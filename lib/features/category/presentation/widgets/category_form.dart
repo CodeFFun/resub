@@ -6,7 +6,7 @@ import 'package:resub/features/category/domain/entities/category_entity.dart';
 
 class CategoryForm extends StatefulWidget {
   final CategoryEntity? initialCategory;
-  final List<String> shops;
+  final List<Map<String, String>> shops;
   final Function(CategoryEntity)? onSubmit;
   final String submitButtonLabel;
   final bool showBackButton;
@@ -44,9 +44,8 @@ class _CategoryFormState extends State<CategoryForm> {
     _selectedShops = List<bool>.filled(widget.shops.length, false);
     if (widget.initialCategory != null) {
       for (int i = 0; i < widget.shops.length; i++) {
-        final shopValue = widget.shops[i];
-        if (widget.initialCategory!.shopId == shopValue ||
-            widget.initialCategory!.shopName == shopValue) {
+        final shopId = widget.shops[i]['id'];
+        if (widget.initialCategory!.shopId == shopId) {
           _selectedShops[i] = true;
         }
       }
@@ -65,7 +64,7 @@ class _CategoryFormState extends State<CategoryForm> {
       String? selectedShopId;
       for (int i = 0; i < _selectedShops.length; i++) {
         if (_selectedShops[i]) {
-          selectedShopId = widget.shops[i];
+          selectedShopId = widget.shops[i]['id'];
           break;
         }
       }
@@ -170,7 +169,7 @@ class _CategoryFormState extends State<CategoryForm> {
                             });
                           },
                           title: Text(
-                            widget.shops[index],
+                            widget.shops[index]['name'] ?? 'Unknown Shop',
                             style: TextStyle(
                               fontSize: 14,
                               color: colorScheme.onSurface,

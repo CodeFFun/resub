@@ -8,6 +8,8 @@ import 'package:resub/features/category/presentation/pages/update_category_scree
 import 'package:resub/features/category/presentation/state/category_state.dart';
 import 'package:resub/features/category/presentation/view_models/category_view_model.dart';
 import 'package:resub/features/category/presentation/widgets/category_card.dart';
+import 'package:resub/features/shop/presentation/state/shop_state.dart';
+import 'package:resub/features/shop/presentation/view_models/shop_view_model.dart';
 
 class CategoryPageScreen extends ConsumerStatefulWidget {
   const CategoryPageScreen({super.key});
@@ -17,8 +19,8 @@ class CategoryPageScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
-  late List<CategoryEntity> _categories = [];
-  late final List<String> _shops = [];
+  List<CategoryEntity> _categories = [];
+  List<Map<String, String>> _shops = [];
 
   @override
   void initState() {
@@ -29,36 +31,41 @@ class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
   }
 
   void _loadUserData() async {
-    await ref.read(categoryViewModelProvider.notifier).getAllCategories();
+    await ref.read(shopViewModelProvider.notifier).getAllShopsOfUser();
+    _loadCategories();
   }
 
-  void _handleAddCategory(CategoryEntity category) {
-    setState(() {
-      _categories.add(
-        category.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()),
-      );
-    });
-    if (mounted) {
-      Navigator.pop(context);
-    }
+  void _loadCategories() async {
+    await Future.wait(
+      _shops.map(
+        (shop) async => await ref
+            .read(categoryViewModelProvider.notifier)
+            .getCategoriesByShopId(shopId: shop['id'] ?? ''),
+      ),
+    );
   }
 
-  void _handleUpdateCategory(CategoryEntity category) {
-    setState(() {
-      final index = _categories.indexWhere((cat) => cat.id == category.id);
-      if (index != -1) {
-        _categories[index] = category;
-      }
-    });
-    if (mounted) {
-      Navigator.pop(context);
-    }
+  void _handleAddCategory(CategoryEntity category) async {
+    await ref
+        .read(categoryViewModelProvider.notifier)
+        .createCategory(categoryEntity: category);
+    AppRoutes.pop(context);
   }
 
-  void _handleDeleteCategory(String id) {
-    setState(() {
-      _categories.removeWhere((category) => category.id == id);
-    });
+  void _handleUpdateCategory(CategoryEntity category) async {
+    await ref
+        .read(categoryViewModelProvider.notifier)
+        .updateCategory(
+          categoryEntity: category,
+          categoryId: category.id ?? '',
+        );
+    AppRoutes.pop(context);
+  }
+
+  void _handleDeleteCategory(String id) async {
+    await ref
+        .read(categoryViewModelProvider.notifier)
+        .deleteCategory(categoryId: id);
   }
 
   void _openCreateCategoryScreen() {
@@ -89,9 +96,40 @@ class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
     final appColors = theme.extension<AppThemeColors>();
 
     ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
-      if (next.status == CategoryStatus.loaded) {
+      if (next.status == CategoryStatus.loaded && next.categories != null) {
         setState(() {
-          _categories = next.categories ?? [];
+          _categories = next.categories!;
+        });
+      } else if (next.status == CategoryStatus.created &&
+          next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      } else if (next.status == CategoryStatus.updated &&
+          next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      } else if (next.status == CategoryStatus.deleted &&
+          next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      }
+    });
+    ref.listen(shopViewModelProvider, (previous, next) {
+      if (next.status == ShopStatus.loaded) {
+        setState(() {
+          _shops =
+              next.shops
+                  ?.map(
+                    (shop) => {
+                      'id': shop.id ?? '',
+                      'name': shop.name ?? 'Unknown Shop',
+                    },
+                  )
+                  .toList() ??
+              [];
         });
       }
     });

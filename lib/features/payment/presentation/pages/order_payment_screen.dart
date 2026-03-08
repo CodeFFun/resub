@@ -75,6 +75,7 @@ class _OrderPaymentScreenState extends ConsumerState<OrderPaymentScreen> {
     final allPayments = paymentState.payments ?? [];
     final filteredPayments = _filterOrderPayments(allPayments);
     final payments = _sortPayments(filteredPayments);
+    debugPrint('$payments');
     final isLoading =
         paymentState.status == PaymentStatus.loading && payments.isEmpty;
 

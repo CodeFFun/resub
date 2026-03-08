@@ -1,27 +1,25 @@
-import 'package:dio/dio.dart';
 import 'package:esewa_flutter_sdk/esewa_config.dart';
 import 'package:esewa_flutter_sdk/esewa_flutter_sdk.dart';
 import 'package:esewa_flutter_sdk/esewa_payment.dart';
 import 'package:esewa_flutter_sdk/esewa_payment_success_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:resub/core/api/api_client.dart';
 import 'package:resub/core/constants/esewa_constants.dart';
 import 'package:uuid/uuid.dart';
 
 final esewaPaymentServiceProvider = Provider<EsewaPaymentService>((ref) {
-  return EsewaPaymentService(apiClient: ref.read(apiClientProvider));
+  return EsewaPaymentService();
 });
 
 class EsewaPaymentService {
-  final ApiClient _apiClient;
   final Uuid _uuid = const Uuid();
 
-  EsewaPaymentService({required ApiClient apiClient}) : _apiClient = apiClient;
+  EsewaPaymentService();
 
   /// Generate unique product ID for each transaction
   String generateProductId() {
-    return _uuid.v4();
+    // Keep ID alphanumeric and compact to avoid SDK/backend validation issues.
+    return _uuid.v4().replaceAll('-', '').substring(0, 20);
   }
 
   /// Initiate eSewa payment
@@ -37,6 +35,13 @@ class EsewaPaymentService {
     try {
       final productId = generateProductId();
       final paymentCallbackUrl = callbackUrl ?? kEsewaCallbackUrl;
+      final normalizedAmount = _normalizeAmount(amount);
+
+      debugPrint(
+        'ESEWA REQUEST => env=${isTestEnvironment ? 'test' : 'live'}, '
+        'productId=$productId, amount=$normalizedAmount, '
+        'callbackUrl=${paymentCallbackUrl.isEmpty ? '(empty)' : paymentCallbackUrl}',
+      );
 
       EsewaFlutterSdk.initPayment(
         esewaConfig: EsewaConfig(
@@ -47,7 +52,7 @@ class EsewaPaymentService {
         esewaPayment: EsewaPayment(
           productId: productId,
           productName: productName,
-          productPrice: amount,
+          productPrice: normalizedAmount,
           callbackUrl: paymentCallbackUrl,
         ),
         onPaymentSuccess: (EsewaPaymentSuccessResult data) {
@@ -69,10 +74,16 @@ class EsewaPaymentService {
     }
   }
 
-  /// Verify transaction status with eSewa server
-  /// Note: This makes an external API call which may fail due to network issues.
-  /// For immediate UI feedback, we rely on the SDK's success callback.
-  /// For production, implement server-to-server verification on your backend.
+  /// Keep amount format stable for SDK/server parsing.
+  /// Examples: "100" -> "100.00", "99.5" -> "99.50"
+  String _normalizeAmount(String amount) {
+    final parsed = double.tryParse(amount.trim());
+    if (parsed == null) {
+      throw FormatException('Invalid payment amount: $amount');
+    }
+    return parsed.toStringAsFixed(2);
+  }
+
   Future<EsewaVerificationResult> verifyTransaction(
     EsewaPaymentSuccessResult result,
   ) async {
@@ -133,27 +144,6 @@ class EsewaPaymentService {
         status: 'ERROR',
         message: 'Verification failed: ${e.toString()}',
       );
-    }
-  }
-
-  /// Call eSewa verification API
-  Future<Response> _callVerificationApi(
-    EsewaPaymentSuccessResult result,
-  ) async {
-    try {
-      // eSewa verification endpoint
-      final response = await _apiClient.get(
-        'https://uat.esewa.com.np/api/epay/transaction/status/',
-        queryParameters: {
-          'product_code': kEsewaId,
-          'total_amount': result.totalAmount,
-          'transaction_uuid': result.refId,
-        },
-      );
-      return response;
-    } catch (e) {
-      debugPrint("Verification API Error: ${e.toString()}");
-      rethrow;
     }
   }
 }

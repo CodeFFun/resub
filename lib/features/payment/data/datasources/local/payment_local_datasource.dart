@@ -16,12 +16,22 @@ class PaymentLocalDatasource implements IPaymentLocalDatasource {
 
   @override
   Future<PaymentHiveModel> createPayment(PaymentHiveModel paymentModel) async {
-    return await _hiveService.createPayment(paymentModel);
+    try {
+      final result = await _hiveService.createPayment(paymentModel);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   @override
   Future<bool> deletePayment(String id) async {
-    return await _hiveService.deletePayment(id);
+    try {
+      final result = await _hiveService.deletePayment(id);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   @override
@@ -31,26 +41,61 @@ class PaymentLocalDatasource implements IPaymentLocalDatasource {
 
   @override
   Future<List<PaymentHiveModel>> getAllPayments() async {
-    return _hiveService.getAllPayments();
+    try {
+      final result = _hiveService.getAllPayments();
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   @override
   Future<PaymentHiveModel?> getPaymentById(String id) async {
-    return _hiveService.getPaymentById(id);
+    try {
+      final result = _hiveService.getPaymentById(id);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   @override
   Future<List<PaymentHiveModel>> getPaymentsByShopId(String shopId) async {
-    return _hiveService.getPaymentsByShopId(shopId);
+    try {
+      final result = _hiveService.getPaymentsByShopId(shopId);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   @override
   Future<List<PaymentHiveModel>> getPaymentsByUserId(String userId) async {
-    return _hiveService.getPaymentsByUserId(userId);
+    try {
+      final result = _hiveService.getPaymentsByUserId(userId);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+
+  @override
+  Future<List<PaymentHiveModel>> getPaymentsOfShop(String userId) async {
+    try {
+      final result = _hiveService.getPaymentsOfShop(userId);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   @override
   Future<bool> updatePayment(String id, PaymentHiveModel paymentModel) async {
-    return await _hiveService.updatePayment(id, paymentModel);
+    try {
+      final result = await _hiveService.updatePayment(id, paymentModel);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 }

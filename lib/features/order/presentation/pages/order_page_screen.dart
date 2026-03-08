@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/core/constants/esewa_constants.dart';
 import 'package:resub/features/order/domain/entities/order_entity.dart';
 import 'package:resub/features/order/domain/entities/order_item_entity.dart';
 import 'package:resub/features/order/presentation/view_models/order_view_model.dart';
@@ -191,6 +192,7 @@ class _OrderPageScreenState extends ConsumerState<OrderPageScreen> {
           productName: 'Order Payment',
           amount: totalPrice.toString(),
           orderIds: orderIds,
+          isTestEnvironment: kEsewaUseTestEnvironment,
         );
   }
 

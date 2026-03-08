@@ -16,12 +16,22 @@ class OrderLocalDatasource implements IOrderLocalDatasource {
 
   @override
   Future<OrderHiveModel> createOrder(OrderHiveModel orderModel) async {
-    return await _hiveService.createOrder(orderModel);
+    try {
+      final createdOrder = await _hiveService.createOrder(orderModel);
+      return createdOrder;
+    } catch (e) {
+      return Future.error('Failed to create order: $e');
+    }
   }
 
   @override
   Future<bool> deleteOrder(String id) async {
-    return await _hiveService.deleteOrder(id);
+    try {
+      final result = await _hiveService.deleteOrder(id);
+      return result;
+    } catch (e) {
+      return Future.error('Failed to delete order');
+    }
   }
 
   @override
@@ -31,26 +41,81 @@ class OrderLocalDatasource implements IOrderLocalDatasource {
 
   @override
   Future<List<OrderHiveModel>> getAllOrders() async {
-    return _hiveService.getAllOrders();
+    try {
+      final orders = _hiveService.getAllOrders();
+      final populated = _populateOrderItemsForModels(orders);
+      return populated;
+    } catch (e) {
+      return Future.error('Failed to fetch orders');
+    }
   }
 
   @override
   Future<OrderHiveModel?> getOrderById(String id) async {
-    return _hiveService.getOrderById(id);
+    try {
+      final order = _hiveService.getOrderById(id);
+      if (order != null) {
+        return _populateOrderItemsForModel(order);
+      }
+      return null;
+    } catch (e) {
+      return Future.error('Failed to fetch order');
+    }
   }
 
   @override
   Future<List<OrderHiveModel>> getOrdersByShopId(String shopId) async {
-    return _hiveService.getOrdersByShopId(shopId);
+    try {
+      final orders = _hiveService.getOrdersByShopId(shopId);
+      final populated = _populateOrderItemsForModels(orders);
+      return populated;
+    } catch (e) {
+      return Future.error('Failed to fetch orders by shop ID');
+    }
+  }
+
+  // Helper to ensure order items are populated
+  List<OrderHiveModel> _populateOrderItemsForModels(
+    List<OrderHiveModel> orders,
+  ) {
+    return orders.map((order) => _populateOrderItemsForModel(order)).toList();
+  }
+
+  OrderHiveModel _populateOrderItemsForModel(OrderHiveModel order) {
+    if (order.orderItemsIds != null && order.orderItemsIds!.isNotEmpty) {
+      final items = _hiveService.getOrderItemsByIds(order.orderItemsIds!);
+      if (items.isNotEmpty) {
+        order.setOrderItems(items);
+      }
+    }
+    if (order.subscriptionId != null) {
+      final subscription = _hiveService.getSubscriptionById(
+        order.subscriptionId!,
+      );
+      if (subscription != null) {
+        order.setSubscription(subscription);
+      }
+    }
+    return order;
   }
 
   @override
   Future<List<OrderHiveModel>> getOrdersByUserId(String userId) async {
-    return _hiveService.getOrdersByUserId(userId);
+    try {
+      final orders = _hiveService.getOrdersByUserId(userId);
+      return _populateOrderItemsForModels(orders);
+    } catch (e) {
+      return Future.error('Failed to fetch orders by user ID');
+    }
   }
 
   @override
   Future<bool> updateOrder(String id, OrderHiveModel orderModel) async {
-    return await _hiveService.updateOrder(id, orderModel);
+    try {
+      final result = await _hiveService.updateOrder(id, orderModel);
+      return result;
+    } catch (e) {
+      return Future.error('Failed to update order');
+    }
   }
 }

@@ -52,9 +52,6 @@ class OrderRepository implements IOrderRepository {
           shopId,
           apiModel,
         );
-        // Sync to local
-        final hiveModel = OrderHiveModel.fromEntity(model.toEntity());
-        await _orderLocalDatasource.createOrder(hiveModel);
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -75,8 +72,6 @@ class OrderRepository implements IOrderRepository {
     if (await _networkInfo.isConnected) {
       try {
         final result = await _orderRemoteDatasource.deleteOrder(id);
-        // Sync to local
-        await _orderLocalDatasource.deleteOrder(id);
         return Right(result);
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -96,9 +91,6 @@ class OrderRepository implements IOrderRepository {
     if (await _networkInfo.isConnected) {
       try {
         final model = await _orderRemoteDatasource.getOrderById(id);
-        // Sync to local
-        final hiveModel = OrderHiveModel.fromEntity(model.toEntity());
-        await _orderLocalDatasource.createOrder(hiveModel);
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -121,11 +113,6 @@ class OrderRepository implements IOrderRepository {
     if (await _networkInfo.isConnected) {
       try {
         final models = await _orderRemoteDatasource.getOrdersByUserId();
-        // Sync to local
-        for (final model in models) {
-          final hiveModel = OrderHiveModel.fromEntity(model.toEntity());
-          await _orderLocalDatasource.createOrder(hiveModel);
-        }
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -148,14 +135,11 @@ class OrderRepository implements IOrderRepository {
   Future<Either<Failure, List<OrderEntity>>> getOrdersByShopId(
     String shopId,
   ) async {
-    if (await _networkInfo.isConnected) {
+    final isConnected = await _networkInfo.isConnected;
+
+    if (isConnected) {
       try {
         final models = await _orderRemoteDatasource.getOrdersByShopId(shopId);
-        // Sync to local
-        for (final model in models) {
-          final hiveModel = OrderHiveModel.fromEntity(model.toEntity());
-          await _orderLocalDatasource.createOrder(hiveModel);
-        }
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -163,7 +147,8 @@ class OrderRepository implements IOrderRepository {
     } else {
       try {
         final models = await _orderLocalDatasource.getOrdersByShopId(shopId);
-        return Right(models.map((model) => model.toEntity()).toList());
+        final entities = models.map((model) => model.toEntity()).toList();
+        return Right(entities);
       } catch (e) {
         return Left(LocalDatabaseFailure(message: e.toString()));
       }
@@ -179,11 +164,6 @@ class OrderRepository implements IOrderRepository {
         final models = await _orderRemoteDatasource.getOrdersBySubscriptionId(
           subscriptionId,
         );
-        // Sync to local
-        for (final model in models) {
-          final hiveModel = OrderHiveModel.fromEntity(model.toEntity());
-          await _orderLocalDatasource.createOrder(hiveModel);
-        }
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -210,9 +190,6 @@ class OrderRepository implements IOrderRepository {
       try {
         final apiModel = OrderApiModel.fromEntity(orderEntity);
         final model = await _orderRemoteDatasource.updateOrder(id, apiModel);
-        // Sync to local
-        final hiveModel = OrderHiveModel.fromEntity(model.toEntity());
-        await _orderLocalDatasource.updateOrder(id, hiveModel);
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));

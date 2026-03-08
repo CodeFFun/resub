@@ -48,9 +48,6 @@ class PaymentRepository implements IPaymentRepository {
       try {
         final apiModel = PaymentApiModel.fromEntity(paymentEntity);
         final model = await _paymentRemoteDatasource.createPayment(apiModel);
-        // Sync to local
-        final hiveModel = PaymentHiveModel.fromEntity(model.toEntity());
-        await _paymentLocalDatasource.createPayment(hiveModel);
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -71,11 +68,6 @@ class PaymentRepository implements IPaymentRepository {
     if (await _networkInfo.isConnected) {
       try {
         final model = await _paymentRemoteDatasource.getPaymentById(id);
-        // Sync to local
-        if (model != null) {
-          final hiveModel = PaymentHiveModel.fromEntity(model.toEntity());
-          await _paymentLocalDatasource.createPayment(hiveModel);
-        }
         return Right(model?.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -95,11 +87,6 @@ class PaymentRepository implements IPaymentRepository {
     if (await _networkInfo.isConnected) {
       try {
         final models = await _paymentRemoteDatasource.getPaymentsByUserId();
-        // Sync to local
-        for (final model in models) {
-          final hiveModel = PaymentHiveModel.fromEntity(model.toEntity());
-          await _paymentLocalDatasource.createPayment(hiveModel);
-        }
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -125,18 +112,17 @@ class PaymentRepository implements IPaymentRepository {
     if (await _networkInfo.isConnected) {
       try {
         final models = await _paymentRemoteDatasource.getPaymentsOfShop();
-        // Sync to local
-        for (final model in models) {
-          final hiveModel = PaymentHiveModel.fromEntity(model.toEntity());
-          await _paymentLocalDatasource.createPayment(hiveModel);
-        }
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
       }
     } else {
       try {
-        final models = await _paymentLocalDatasource.getAllPayments();
+        final userId = _userSession.getCurrentUserId();
+        if (userId == null) {
+          return const Left(ApiFailure(message: 'User not logged in'));
+        }
+        final models = await _paymentLocalDatasource.getPaymentsOfShop(userId);
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(LocalDatabaseFailure(message: e.toString()));
@@ -156,11 +142,6 @@ class PaymentRepository implements IPaymentRepository {
           id,
           apiModel,
         );
-        // Sync to local
-        if (model != null) {
-          final hiveModel = PaymentHiveModel.fromEntity(model.toEntity());
-          await _paymentLocalDatasource.updatePayment(id, hiveModel);
-        }
         return Right(model?.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -190,8 +171,6 @@ class PaymentRepository implements IPaymentRepository {
     if (await _networkInfo.isConnected) {
       try {
         final result = await _paymentRemoteDatasource.deletePayment(id);
-        // Sync to local
-        await _paymentLocalDatasource.deletePayment(id);
         return Right(result);
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));

@@ -23,7 +23,7 @@ class SubscriptionPlanHiveModelAdapter
       productNames: (fields[2] as List?)?.cast<String>(),
       productQuantities: (fields[3] as List?)?.cast<int>(),
       productBasePrices: (fields[4] as List?)?.cast<num>(),
-      productDiscounts: (fields[5] as List?)?.cast<int>(),
+      productDiscounts: (fields[5] as List?)?.cast<double>(),
       pricePerCycle: fields[6] as num?,
       frequency: fields[7] as int?,
       quantity: fields[8] as int?,

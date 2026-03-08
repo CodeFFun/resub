@@ -21,6 +21,7 @@ abstract interface class IPaymentLocalDatasource {
   Future<List<PaymentHiveModel>> getAllPayments();
   Future<List<PaymentHiveModel>> getPaymentsByUserId(String userId);
   Future<List<PaymentHiveModel>> getPaymentsByShopId(String shopId);
+  Future<List<PaymentHiveModel>> getPaymentsOfShop(String userId);
   Future<bool> updatePayment(String id, PaymentHiveModel paymentModel);
   Future<bool> deletePayment(String id);
   Future<void> deleteAllPayments();

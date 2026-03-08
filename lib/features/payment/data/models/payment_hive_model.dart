@@ -1,6 +1,14 @@
 import 'package:hive/hive.dart';
 import 'package:resub/core/constants/hive_table_constants.dart';
+import 'package:resub/features/order/data/models/order_hive_model.dart';
+import 'package:resub/features/order/domain/entities/order_entity.dart';
 import 'package:resub/features/payment/domain/entities/payment_entity.dart';
+import 'package:resub/features/shop/data/models/shop_hive_model.dart';
+import 'package:resub/features/shop/domain/entities/shop_entity.dart';
+import 'package:resub/features/subscription/data/models/subscription_hive_model.dart';
+import 'package:resub/features/subscription/domain/entities/subscription_entity.dart';
+import 'package:resub/features/user/data/models/user_hive_model.dart';
+import 'package:resub/features/user/domain/entities/user_entity.dart';
 
 part 'payment_hive_model.g.dart';
 
@@ -42,6 +50,12 @@ class PaymentHiveModel extends HiveObject {
   @HiveField(11)
   final DateTime? updatedAt;
 
+  // Non-persisted fields for populated relationships.
+  List<OrderHiveModel>? _orders;
+  SubscriptionHiveModel? _subscription;
+  UserHiveModel? _user;
+  ShopHiveModel? _shop;
+
   PaymentHiveModel({
     this.id,
     this.provider,
@@ -55,7 +69,29 @@ class PaymentHiveModel extends HiveObject {
     this.orderItemsId,
     this.createdAt,
     this.updatedAt,
-  });
+    List<OrderHiveModel>? orders,
+    SubscriptionHiveModel? subscription,
+    UserHiveModel? user,
+    ShopHiveModel? shop,
+  }) : _orders = orders,
+       _subscription = subscription,
+       _user = user,
+       _shop = shop;
+
+  // Getters for populated relationships.
+  List<OrderHiveModel>? get orders => _orders;
+  SubscriptionHiveModel? get subscription => _subscription;
+  UserHiveModel? get user => _user;
+  ShopHiveModel? get shop => _shop;
+
+  // Setters for populated relationships.
+  void setOrders(List<OrderHiveModel>? orders) => _orders = orders;
+  void setSubscription(SubscriptionHiveModel? subscription) {
+    _subscription = subscription;
+  }
+
+  void setUser(UserHiveModel? user) => _user = user;
+  void setShop(ShopHiveModel? shop) => _shop = shop;
 
   // From entity
   factory PaymentHiveModel.fromEntity(PaymentEntity entity) {
@@ -77,6 +113,25 @@ class PaymentHiveModel extends HiveObject {
 
   // To entity
   PaymentEntity toEntity() {
+    final resolvedOrders = _orders != null
+        ? _orders!.map((order) => order.toEntity()).toList()
+        : (orderId != null && orderId!.isNotEmpty)
+        ? orderId!.map((id) => OrderEntity(id: id)).toList()
+        : null;
+
+    final resolvedSubscription =
+        _subscription?.toEntity() ??
+        (subscriptionId != null
+            ? SubscriptionEntity(id: subscriptionId)
+            : null);
+
+    final resolvedUser =
+        _user?.toEntity() ??
+        (userId != null ? UserEntity(userId: userId) : null);
+
+    final resolvedShop =
+        _shop?.toEntity() ?? (shopId != null ? ShopEntity(id: shopId) : null);
+
     return PaymentEntity(
       id: id,
       provider: provider,
@@ -84,11 +139,11 @@ class PaymentHiveModel extends HiveObject {
       amount: amount,
       paidAt: paidAt,
       orderId: orderId,
-      orders: null, // Orders should be fetched separately
+      orders: resolvedOrders,
       subscriptionId: subscriptionId,
-      subscription: null, // Subscription should be fetched separately
-      userId: null, // User should be fetched separately
-      shopId: null, // Shop should be fetched separately
+      subscription: resolvedSubscription,
+      userId: resolvedUser,
+      shopId: resolvedShop,
       orderItemsId: orderItemsId,
       createdAt: createdAt,
       updatedAt: updatedAt,

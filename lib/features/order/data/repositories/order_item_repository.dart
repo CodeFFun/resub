@@ -44,9 +44,6 @@ class OrderItemRepository implements IOrderItemRepository {
         final model = await _orderItemRemoteDatasource.createOrderItem(
           apiModel,
         );
-        // Sync to local
-        final hiveModel = OrderItemHiveModel.fromEntity(model.toEntity());
-        await _orderItemLocalDatasource.createOrderItem(hiveModel);
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -69,8 +66,6 @@ class OrderItemRepository implements IOrderItemRepository {
     if (await _networkInfo.isConnected) {
       try {
         final result = await _orderItemRemoteDatasource.deleteOrderItem(id);
-        // Sync to local
-        await _orderItemLocalDatasource.deleteOrderItem(id);
         return Right(result);
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -90,9 +85,6 @@ class OrderItemRepository implements IOrderItemRepository {
     if (await _networkInfo.isConnected) {
       try {
         final model = await _orderItemRemoteDatasource.getOrderItemById(id);
-        // Sync to local
-        final hiveModel = OrderItemHiveModel.fromEntity(model.toEntity());
-        await _orderItemLocalDatasource.createOrderItem(hiveModel);
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -124,9 +116,6 @@ class OrderItemRepository implements IOrderItemRepository {
           id,
           apiModel,
         );
-        // Sync to local
-        final hiveModel = OrderItemHiveModel.fromEntity(model.toEntity());
-        await _orderItemLocalDatasource.updateOrderItem(id, hiveModel);
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));

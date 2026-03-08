@@ -14,6 +14,7 @@ class ApiEndpoints {
   // 5. For emulator use: isPhysicalDevice = false
 
   static const bool isPhysicalDevice = true;
+  // static const String _ipAddress = '192.168.137.1';
   static const String _ipAddress = '192.168.137.1';
   static const int _port = 8080;
 

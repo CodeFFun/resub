@@ -50,13 +50,6 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
         );
         final model = await _subscriptionPlanRemoteDatasource
             .createSubscriptionPlan(apiModel);
-        // Sync to local
-        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
-          model.toEntity(),
-        );
-        await _subscriptionPlanLocalDatasource.createSubscriptionPlan(
-          hiveModel,
-        );
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -81,8 +74,6 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       try {
         final result = await _subscriptionPlanRemoteDatasource
             .deleteSubscriptionPlan(id);
-        // Sync to local
-        await _subscriptionPlanLocalDatasource.deleteSubscriptionPlan(id);
         return Right(result);
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -106,13 +97,6 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       try {
         final model = await _subscriptionPlanRemoteDatasource
             .getSubscriptionPlanById(id);
-        // Sync to local
-        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
-          model.toEntity(),
-        );
-        await _subscriptionPlanLocalDatasource.createSubscriptionPlan(
-          hiveModel,
-        );
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -140,15 +124,6 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
       try {
         final models = await _subscriptionPlanRemoteDatasource
             .getSubscriptionPlansByShopId(shopId);
-        // Sync to local
-        for (final model in models) {
-          final hiveModel = SubscriptionPlanHiveModel.fromEntity(
-            model.toEntity(),
-          );
-          await _subscriptionPlanLocalDatasource.createSubscriptionPlan(
-            hiveModel,
-          );
-        }
         return Right(models.map((model) => model.toEntity()).toList());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));
@@ -176,14 +151,6 @@ class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
         );
         final model = await _subscriptionPlanRemoteDatasource
             .updateSubscriptionPlan(id, apiModel);
-        // Sync to local
-        final hiveModel = SubscriptionPlanHiveModel.fromEntity(
-          model.toEntity(),
-        );
-        await _subscriptionPlanLocalDatasource.updateSubscriptionPlan(
-          id,
-          hiveModel,
-        );
         return Right(model.toEntity());
       } catch (e) {
         return Left(ApiFailure(message: e.toString()));

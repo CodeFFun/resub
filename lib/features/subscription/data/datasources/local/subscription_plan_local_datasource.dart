@@ -20,12 +20,22 @@ class SubscriptionPlanLocalDatasource
   Future<SubscriptionPlanHiveModel> createSubscriptionPlan(
     SubscriptionPlanHiveModel subscriptionPlanModel,
   ) async {
-    return await _hiveService.createSubscriptionPlan(subscriptionPlanModel);
+    try {
+      final createdPlan = await _hiveService.createSubscriptionPlan(subscriptionPlanModel);
+      return createdPlan;
+    } catch (e) {
+      return Future.error('Failed to create subscription plan: $e');
+    }
   }
 
   @override
   Future<bool> deleteSubscriptionPlan(String id) async {
-    return await _hiveService.deleteSubscriptionPlan(id);
+    try {
+      final result = await _hiveService.deleteSubscriptionPlan(id);
+      return result;
+    } catch (e) {
+      return Future.error('Failed to delete subscription plan');
+    }
   }
 
   @override
@@ -35,19 +45,34 @@ class SubscriptionPlanLocalDatasource
 
   @override
   Future<List<SubscriptionPlanHiveModel>> getAllSubscriptionPlans() async {
-    return _hiveService.getAllSubscriptionPlans();
+    try {
+      final plans = _hiveService.getAllSubscriptionPlans();
+      return plans;
+    } catch (e) {
+      return Future.error('Failed to fetch subscription plans');
+    }
   }
 
   @override
   Future<List<SubscriptionPlanHiveModel>> getSubscriptionPlansByShopId(
     String shopId,
   ) async {
-    return _hiveService.getSubscriptionPlansByShopId(shopId);
+    try {
+      final plans = _hiveService.getSubscriptionPlansByShopId(shopId);
+      return plans;
+    } catch (e) {
+      return Future.error('Failed to fetch subscription plans by shop ID');
+    }
   }
 
   @override
   Future<SubscriptionPlanHiveModel?> getSubscriptionPlanById(String id) async {
-    return _hiveService.getSubscriptionPlanById(id);
+    try {
+      final plan = _hiveService.getSubscriptionPlanById(id);
+      return plan;
+    } catch (e) {
+      return Future.error('Failed to fetch subscription plan by ID');
+    }
   }
 
   @override
@@ -55,6 +80,11 @@ class SubscriptionPlanLocalDatasource
     String id,
     SubscriptionPlanHiveModel subscriptionPlanModel,
   ) async {
-    return await _hiveService.updateSubscriptionPlan(id, subscriptionPlanModel);
+    try {
+      final result = await _hiveService.updateSubscriptionPlan(id, subscriptionPlanModel);
+      return result;
+    } catch (e) {
+      return Future.error('Failed to update subscription plan');
+    }
   }
 }

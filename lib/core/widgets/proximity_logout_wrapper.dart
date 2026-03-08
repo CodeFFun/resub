@@ -69,10 +69,6 @@ class _ProximityLogoutWrapperState
 
     // Now check if proximity should be enabled (after _isInitialized is set)
     final isEnabled = ref.read(proximityLogoutEnabledProvider);
-    print(
-      '🔵 ProximityLogoutWrapper: Initial proximity logout enabled = $isEnabled',
-    );
-
     if (isEnabled) {
       _startProximityListener();
     }

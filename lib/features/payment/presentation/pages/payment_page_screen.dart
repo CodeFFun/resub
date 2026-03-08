@@ -61,6 +61,7 @@ class _PaymentPageScreenState extends ConsumerState<PaymentPageScreen> {
     });
 
     final payments = _sortPayments(paymentState.payments ?? []);
+    print(payments);
     final isLoading =
         paymentState.status == PaymentStatus.loading && payments.isEmpty;
 

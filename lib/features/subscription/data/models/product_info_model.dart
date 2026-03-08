@@ -5,7 +5,7 @@ class SubscriptionProductInfoApiModel {
   final int? quantity;
   final num? basePrice;
   final String? id;
-  final int? discount;
+  final double? discount;
 
   SubscriptionProductInfoApiModel({
     this.name,
@@ -21,7 +21,7 @@ class SubscriptionProductInfoApiModel {
       name: json['name'] as String?,
       quantity: json['quantity'] as int?,
       basePrice: json['base_price'] as num?,
-      discount: json['discount'] as int?,
+      discount: (json['discount'] as num?)?.toDouble(),
     );
   }
 

@@ -4,7 +4,8 @@ import 'package:resub/features/category/domain/entities/category_entity.dart';
 
 class CategoryCard extends StatelessWidget {
   final CategoryEntity category;
-  final List<String> allShops; // List of shop names for display
+  final List<Map<String, String>>
+  allShops; // List of shop maps with id and name
   final VoidCallback onLeftIconTap;
   final VoidCallback onDelete;
 
@@ -20,13 +21,18 @@ class CategoryCard extends StatelessWidget {
     if (category.shopName != null && category.shopName!.isNotEmpty) {
       return category.shopName!;
     }
-    if (category.shopId == null || category.shopId!.isEmpty) {
+    if (category.shopId == null || (category.shopId?.isEmpty ?? true)) {
       return 'No shops';
     }
-    if (allShops.contains(category.shopId)) {
-      return category.shopId!;
+    // Look up shop name by ID
+    final shop = allShops.firstWhere(
+      (shop) => shop['id'] == category.shopId,
+      orElse: () => {},
+    );
+    if (shop.isNotEmpty && shop['name'] != null) {
+      return shop['name']!;
     }
-    return 'No shops';
+    return category.shopId ?? 'No shops';
   }
 
   @override
@@ -36,7 +42,7 @@ class CategoryCard extends StatelessWidget {
     final appColors = theme.extension<AppThemeColors>();
 
     return Dismissible(
-      key: Key(category.id ?? category.name!),
+      key: Key(category.id ?? category.name ?? 'category'),
       onDismissed: (direction) {
         onDelete();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +98,7 @@ class CategoryCard extends StatelessWidget {
             ),
           ),
           title: Text(
-            category.name!,
+            category.name ?? 'Unnamed Category',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -104,7 +110,7 @@ class CategoryCard extends StatelessWidget {
             children: [
               const SizedBox(height: 6),
               Text(
-                category.description!,
+                category.description ?? 'No description',
                 style: TextStyle(
                   fontSize: 14,
                   color:

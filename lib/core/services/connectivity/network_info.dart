@@ -18,12 +18,11 @@ class NetworkInfo implements INetworkInfo {
 
   @override
   Future<bool> get isConnected async {
-    final result = await _connectivity.checkConnectivity(); // wifi / mobile
+    final result = await _connectivity.checkConnectivity();
     if (result.contains(ConnectivityResult.none)) {
       return false;
     }
-    // return await _isInternet();
-    return false;
+    return await _isInternet();
   }
 
   Future<bool> _isInternet() async {

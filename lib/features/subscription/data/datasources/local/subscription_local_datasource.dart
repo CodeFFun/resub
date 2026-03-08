@@ -19,12 +19,24 @@ class SubscriptionLocalDatasource implements ISubscriptionLocalDatasource {
   Future<SubscriptionHiveModel> createSubscription(
     SubscriptionHiveModel subscriptionModel,
   ) async {
-    return await _hiveService.createSubscription(subscriptionModel);
+    try {
+      final createdSubscription = await _hiveService.createSubscription(
+        subscriptionModel,
+      );
+      return createdSubscription;
+    } catch (e) {
+      return Future.error('Failed to create subscription: $e');
+    }
   }
 
   @override
   Future<bool> deleteSubscription(String id) async {
-    return await _hiveService.deleteSubscription(id);
+    try {
+      final result = await _hiveService.deleteSubscription(id);
+      return result;
+    } catch (e) {
+      return Future.error('Failed to delete subscription');
+    }
   }
 
   @override
@@ -34,26 +46,46 @@ class SubscriptionLocalDatasource implements ISubscriptionLocalDatasource {
 
   @override
   Future<List<SubscriptionHiveModel>> getAllSubscriptions() async {
-    return _hiveService.getAllSubscriptions();
+    try {
+      final subscriptions = _hiveService.getAllSubscriptions();
+      return subscriptions;
+    } catch (e) {
+      return Future.error('Failed to fetch subscriptions');
+    }
   }
 
   @override
   Future<SubscriptionHiveModel?> getSubscriptionById(String id) async {
-    return _hiveService.getSubscriptionById(id);
+    try {
+      final result = _hiveService.getSubscriptionById(id);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error('Failed to fetch subscription');
+    }
   }
 
   @override
   Future<List<SubscriptionHiveModel>> getSubscriptionsByShopId(
     String shopId,
   ) async {
-    return _hiveService.getSubscriptionsByShopId(shopId);
+    try {
+      final result = _hiveService.getSubscriptionsByShopId(shopId);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error('Failed to fetch subscriptions');
+    }
   }
 
   @override
   Future<List<SubscriptionHiveModel>> getSubscriptionsByUserId(
     String userId,
   ) async {
-    return _hiveService.getSubscriptionsByUserId(userId);
+    try {
+      final result = _hiveService.getSubscriptionsByUserId(userId);
+      return Future.value(result);
+    } catch (e) {
+      return Future.error('Failed to fetch subscriptions');
+    }
   }
 
   @override
@@ -61,6 +93,14 @@ class SubscriptionLocalDatasource implements ISubscriptionLocalDatasource {
     String id,
     SubscriptionHiveModel subscriptionModel,
   ) async {
-    return await _hiveService.updateSubscription(id, subscriptionModel);
+    try {
+      final result = await _hiveService.updateSubscription(
+        id,
+        subscriptionModel,
+      );
+      return Future.value(result);
+    } catch (e) {
+      return Future.error('Failed to update subscription');
+    }
   }
 }

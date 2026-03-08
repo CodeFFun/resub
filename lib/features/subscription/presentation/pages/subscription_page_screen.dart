@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/core/constants/esewa_constants.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/order/domain/entities/order_entity.dart';
 import 'package:resub/features/order/presentation/state/order_state.dart';
 import 'package:resub/features/order/presentation/view_models/order_view_model.dart';
@@ -252,10 +254,14 @@ class _SubscriptionPageScreenState
   }
 
   Future<void> _createOrders(String subscriptionId, String shopId) async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+
     OrderEntity orderEntity = OrderEntity(
       shopId: ShopInfo(id: shopId),
       deliveryType: 'subscription',
       subscriptionId: subscriptionId,
+      userId: userId, // ✅ Now includes userId
     );
 
     await ref
@@ -286,6 +292,7 @@ class _SubscriptionPageScreenState
           productName: 'Order Payment',
           amount: totalPrice.toString(),
           orderIds: orderIds,
+          isTestEnvironment: kEsewaUseTestEnvironment,
         );
   }
 

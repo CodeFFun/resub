@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/core/widgets/my_snackbar.dart';
 import 'package:resub/features/order/domain/entities/order_entity.dart';
 import 'package:resub/features/order/domain/entities/order_item_entity.dart';
@@ -41,6 +42,8 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
   }
 
   void _onHeartPressed(ProductEntity product) async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
     final subPlan = SubscriptionPlanEntity(
       frequency: 1,
       pricePerCycle: product.basePrice * product.stockQuantity,
@@ -67,6 +70,7 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
         subscriptionPlanId: createSubPlan,
         startDate: DateTime.now(),
         shopId: _shop?.id,
+        userId: userId,
       );
       await ref
           .read(subscriptionViewModelProvider.notifier)
@@ -75,6 +79,9 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
   }
 
   void _onCartPressed(ProductEntity product) async {
+    final userSession = ref.read(userSessionServiceProvider);
+    final userId = userSession.getCurrentUserId();
+
     final orderItem = OrderItemEntity(
       quantity: 1,
       unitPrice: product.basePrice,
@@ -93,6 +100,7 @@ class _ShopDetailsScreenState extends ConsumerState<ShopDetailsScreen> {
       final order = OrderEntity(
         orderItemsId: [createdOrderItem],
         shopId: ShopInfo(id: _shop?.id, name: _shop?.name),
+        userId: userId, // ✅ Now includes userId
       );
       await ref
           .read(orderViewModelProvider.notifier)

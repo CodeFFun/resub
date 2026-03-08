@@ -36,7 +36,7 @@ class _BottomOrderScreenState extends ConsumerState<BottomOrderScreen> {
       final role = userSession.getCurrentUSerRole();
       return role ?? '';
     }
-    
+
     final subscriptionState = ref.watch(subscriptionViewModelProvider);
     ref.listen(subscriptionViewModelProvider, (previous, next) {
       if (next.status == SubscriptionStatus.updated ||
@@ -58,6 +58,8 @@ class _BottomOrderScreenState extends ConsumerState<BottomOrderScreen> {
             subscriptionState.subscriptions != null
         ? subscriptionState.subscriptions!
         : <SubscriptionEntity>[];
-    return checkRole() == 'customer' ? SubscriptionPageScreen(subscriptions: subs): SubscriptionPaymentScreen();
+    return checkRole() == 'customer'
+        ? SubscriptionPageScreen(subscriptions: subs)
+        : SubscriptionPaymentScreen();
   }
 }

@@ -46,6 +46,7 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         role: user.role ?? '',
       );
       await _tokenService.saveToken(token);
+      print("truggered");
       return user;
     }
 
@@ -62,6 +63,14 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
     if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
       final registeredUser = UserApiModel.fromJson(data);
+
+      // Save token if backend returns one after registration
+      if (response.data['token'] != null) {
+        final token = response.data['token'] as String;
+        await _tokenService.saveToken(token);
+        print("🔄 Token saved after registration");
+      }
+
       // await _userSessionService.saveUserSession(
       //   userId: registeredUser.userId ?? '',
       //   email: registeredUser.email ?? '',
@@ -82,6 +91,14 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
       ApiEndpoints.updateUserByEmail,
       data: sendData,
     );
+
+    // Save new token if backend returns one after update
+    if (response.data['success'] == true && response.data['token'] != null) {
+      final token = response.data['token'] as String;
+      await _tokenService.saveToken(token);
+      print("🔄 Token updated after user update");
+    }
+
     return response.data['success'];
   }
 }

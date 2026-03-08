@@ -20,6 +20,8 @@ final hiveServiceProvider = Provider<HiveService>((ref) {
 });
 
 class HiveService {
+  static bool _initialized = false;
+
   // init
   Future<void> init() async {
     final directory = await getApplicationDocumentsDirectory();
@@ -30,6 +32,7 @@ class HiveService {
     _registerAdapter();
     await _openBoxes();
     await HiveSeeder.seedDatabase();
+    _initialized = true;
   }
 
   // Adapter register
@@ -104,33 +107,18 @@ class HiveService {
 
   // Register user
   Future<UserHiveModel?> register(UserHiveModel user) async {
-    print('Registering user:');
-    print('  - userId: ${user.userId}');
-    print('  - email: ${user.email}');
-    print('  - password: ${user.password}');
-    print('  - userName: ${user.userName}');
-    print('  - fullName: ${user.fullName}');
     await _authBox.put(user.userId, user);
-
-    // Verify the save
-    final savedUser = _authBox.get(user.userId);
-    print('Verified saved user:');
-    print('  - email: ${savedUser?.email}');
-    print('  - password: ${savedUser?.password}');
-
     return user;
   }
 
   // Delete user by userId (for cleanup)
   Future<void> deleteUser(String userId) async {
     await _authBox.delete(userId);
-    print('Deleted user with userId: $userId');
   }
 
   // Delete all users (for cleanup/reset)
   Future<void> deleteAllUsers() async {
     await _authBox.clear();
-    print('Deleted all users from database');
   }
 
   // Get user by email (for debugging)
@@ -144,21 +132,11 @@ class HiveService {
 
   // Login - find user by email and password
   UserHiveModel? login(String email, String password) {
-    print(
-      'HiveService login - Searching for email: "$email", password: "$password"',
-    );
-    print('Total users in box: ${_authBox.length}');
-
     // Debug: print all users and check for corrupted data
     for (var user in _authBox.values) {
-      print(
-        'User in DB - UserId: "${user.userId}", Email: "${user.email}", Password: "${user.password}", UserName: "${user.userName}"',
-      );
-
       // Clean up corrupted users (null email or password)
       if (user.email == null || user.password == null) {
-        print('WARNING: Found corrupted user with userId: ${user.userId}');
-        print('  - This user has null email or password and should be deleted');
+        //
       }
     }
 
@@ -424,8 +402,41 @@ class HiveService {
       Hive.box<OrderHiveModel>(HiveTableConstant.orderTable);
 
   Future<OrderHiveModel> createOrder(OrderHiveModel order) async {
-    await _orderBox.put(order.id, order);
-    return order;
+    final key = order.id ?? DateTime.now().microsecondsSinceEpoch.toString();
+    final scheduleFor = order.scheduleFor ?? DateTime.now();
+    // If order has populated order items, save them first and collect their IDs
+    List<String>? orderItemIds = order.orderItemsIds;
+    if (order.orderItems != null && order.orderItems!.isNotEmpty) {
+      orderItemIds = [];
+      for (final item in order.orderItems!) {
+        final itemId =
+            item.id ?? DateTime.now().microsecondsSinceEpoch.toString();
+        final itemToSave = OrderItemHiveModel(
+          id: itemId,
+          productId: item.productId,
+          productName: item.productName,
+          productBasePrice: item.productBasePrice,
+          productDiscount: item.productDiscount,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        );
+        await _orderItemBox.put(itemId, itemToSave);
+        orderItemIds.add(itemId);
+      }
+    }
+
+    final orderToSave = OrderHiveModel(
+      id: key,
+      orderItemsIds: orderItemIds,
+      shopId: order.shopId,
+      shopName: order.shopName,
+      deliveryType: order.deliveryType,
+      scheduleFor: scheduleFor,
+      subscriptionId: order.subscriptionId,
+      userId: order.userId,
+    );
+    await _orderBox.put(orderToSave.id, orderToSave);
+    return _populateOrderRelations(orderToSave);
   }
 
   OrderHiveModel? getOrderById(String id) {
@@ -437,9 +448,8 @@ class HiveService {
   }
 
   List<OrderHiveModel> getAllOrders() {
-    return _orderBox.values
-        .map((order) => _populateOrderRelations(order))
-        .toList();
+    final orders = _orderBox.values.toList();
+    return orders.map((order) => _populateOrderRelations(order)).toList();
   }
 
   List<OrderHiveModel> getOrdersByUserId(String userId) {
@@ -450,10 +460,14 @@ class HiveService {
   }
 
   List<OrderHiveModel> getOrdersByShopId(String shopId) {
-    return _orderBox.values
-        .where((order) => order.shopId == shopId)
-        .map((order) => _populateOrderRelations(order))
-        .toList();
+    final allOrders = _orderBox.values.toList();
+
+    final orders = allOrders.where((order) {
+      final matches = order.shopId == shopId;
+      return matches;
+    }).toList();
+
+    return orders.map((order) => _populateOrderRelations(order)).toList();
   }
 
   // Helper method to populate order relations
@@ -463,7 +477,28 @@ class HiveService {
       final shop = getShopById(order.shopId!);
       shopName = shop?.name;
     }
-    return OrderHiveModel(
+
+    // Fetch order items if IDs exist
+    List<OrderItemHiveModel>? orderItems;
+    if (order.orderItemsIds != null && order.orderItemsIds!.isNotEmpty) {
+      orderItems = order.orderItemsIds!
+          .map((itemId) => _orderItemBox.get(itemId))
+          .whereType<OrderItemHiveModel>()
+          .toList();
+      // print('  Fetched ${orderItems.length} order items from Hive');
+    } else {
+      // print('  Order has no item IDs');
+    }
+
+    // Fetch subscription if ID exists
+    SubscriptionHiveModel? subscription;
+    if (order.subscriptionId != null) {
+      subscription = _subscriptionBox.get(order.subscriptionId!);
+      // print('  Fetched subscription: ${subscription?.id}');
+    }
+
+    // Create new OrderHiveModel with populated relationships
+    final populatedOrder = OrderHiveModel(
       id: order.id,
       orderItemsIds: order.orderItemsIds,
       shopId: order.shopId,
@@ -472,7 +507,10 @@ class HiveService {
       scheduleFor: order.scheduleFor,
       subscriptionId: order.subscriptionId,
       userId: order.userId,
+      orderItems: orderItems,
+      subscription: subscription,
     );
+    return populatedOrder;
   }
 
   Future<bool> updateOrder(String id, OrderHiveModel order) async {
@@ -500,8 +538,20 @@ class HiveService {
   Future<OrderItemHiveModel> createOrderItem(
     OrderItemHiveModel orderItem,
   ) async {
-    await _orderItemBox.put(orderItem.id, orderItem);
-    return orderItem;
+    final key =
+        orderItem.id ?? DateTime.now().microsecondsSinceEpoch.toString();
+    final itemToSave = OrderItemHiveModel(
+      id: key,
+      productId: orderItem.productId,
+      productName: orderItem.productName,
+      productBasePrice: orderItem.productBasePrice,
+      productDiscount: orderItem.productDiscount,
+      quantity: orderItem.quantity,
+      unitPrice: orderItem.unitPrice,
+    );
+    await _orderItemBox.put(itemToSave.id, itemToSave);
+
+    return itemToSave;
   }
 
   OrderItemHiveModel? getOrderItemById(String id) {
@@ -542,28 +592,212 @@ class HiveService {
       Hive.box<PaymentHiveModel>(HiveTableConstant.paymentsTable);
 
   Future<PaymentHiveModel> createPayment(PaymentHiveModel payment) async {
+    final key = payment.id ?? DateTime.now().microsecondsSinceEpoch.toString();
+    payment = PaymentHiveModel(
+      id: key,
+      provider: "Esewa",
+      amount: payment.amount,
+      status: payment.status,
+      paidAt: DateTime.now(),
+      orderId: payment.orderId,
+      subscriptionId: payment.subscriptionId,
+      userId: payment.userId,
+      shopId: payment.shopId,
+      orderItemsId: payment.orderItemsId,
+      createdAt: DateTime.now(),
+      updatedAt: payment.updatedAt,
+    );
     await _paymentBox.put(payment.id, payment);
-    return payment;
+    return _populatePaymentRelations(payment);
   }
 
   PaymentHiveModel? getPaymentById(String id) {
-    return _paymentBox.get(id);
+    final payment = _paymentBox.get(id);
+    if (payment == null) {
+      return null;
+    }
+    return _populatePaymentRelations(payment);
   }
 
   List<PaymentHiveModel> getAllPayments() {
-    return _paymentBox.values.toList();
+    return _paymentBox.values
+        .map((payment) => _populatePaymentRelations(payment))
+        .toList();
   }
 
   List<PaymentHiveModel> getPaymentsByUserId(String userId) {
+    final userOrderIds = _orderBox.values
+        .where((order) => order.userId == userId)
+        .map((order) => order.id)
+        .whereType<String>()
+        .toSet();
+
+    final userSubscriptionIds = _subscriptionBox.values
+        .where((subscription) => subscription.userId == userId)
+        .map((subscription) => subscription.id)
+        .whereType<String>()
+        .toSet();
+
     return _paymentBox.values
-        .where((payment) => payment.userId == userId)
+        .where((payment) {
+          final matchesOrder =
+              payment.orderId?.any(
+                (orderId) => userOrderIds.contains(orderId),
+              ) ??
+              false;
+          final matchesUser = payment.userId == userId;
+          final matchesSubscription =
+              payment.subscriptionId != null &&
+              userSubscriptionIds.contains(payment.subscriptionId);
+
+          return matchesOrder || matchesUser || matchesSubscription;
+        })
+        .map((payment) => _populatePaymentRelations(payment))
         .toList();
   }
 
   List<PaymentHiveModel> getPaymentsByShopId(String shopId) {
+    final shopOrderIds = _orderBox.values
+        .where((order) => order.shopId == shopId)
+        .map((order) => order.id)
+        .whereType<String>()
+        .toSet();
+
+    if (shopOrderIds.isEmpty) {
+      return [];
+    }
+
     return _paymentBox.values
-        .where((payment) => payment.shopId == shopId)
+        .where(
+          (payment) =>
+              payment.orderId?.any(
+                (orderId) => shopOrderIds.contains(orderId),
+              ) ??
+              false,
+        )
+        .map((payment) => _populatePaymentRelations(payment))
         .toList();
+  }
+
+  List<PaymentHiveModel> getPaymentsOfShop(String userId) {
+    final shopIds = _shopBox.values
+        .where((shop) => shop.userId == userId)
+        .map((shop) => shop.id)
+        .whereType<String>()
+        .toSet();
+
+    if (shopIds.isEmpty) {
+      return [];
+    }
+
+    final shopOrderIds = _orderBox.values
+        .where(
+          (order) => order.shopId != null && shopIds.contains(order.shopId),
+        )
+        .map((order) => order.id)
+        .whereType<String>()
+        .toSet();
+
+    final shopSubscriptionIds = _subscriptionBox.values
+        .where(
+          (subscription) =>
+              subscription.shopId != null &&
+              shopIds.contains(subscription.shopId),
+        )
+        .map((subscription) => subscription.id)
+        .whereType<String>()
+        .toSet();
+
+    return _paymentBox.values
+        .where((payment) {
+          final matchesOrder =
+              payment.orderId?.any(
+                (orderId) => shopOrderIds.contains(orderId),
+              ) ??
+              false;
+          final matchesShop =
+              payment.shopId != null && shopIds.contains(payment.shopId);
+          final matchesSubscription =
+              payment.subscriptionId != null &&
+              shopSubscriptionIds.contains(payment.subscriptionId);
+
+          return matchesOrder || matchesShop || matchesSubscription;
+        })
+        .map((payment) => _populatePaymentRelations(payment))
+        .toList();
+  }
+
+  String? _firstNonEmptyString(Iterable<String?> values) {
+    for (final value in values) {
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  PaymentHiveModel _populatePaymentRelations(PaymentHiveModel payment) {
+    final populatedOrders = (payment.orderId ?? const <String>[])
+        .map((id) => _orderBox.get(id))
+        .whereType<OrderHiveModel>()
+        .map((order) => _populateOrderRelations(order))
+        .toList();
+
+    final resolvedSubscriptionId =
+        payment.subscriptionId ??
+        _firstNonEmptyString(
+          populatedOrders.map((order) => order.subscriptionId),
+        );
+
+    final resolvedUserId =
+        payment.userId ??
+        _firstNonEmptyString(populatedOrders.map((order) => order.userId));
+
+    final resolvedShopId =
+        payment.shopId ??
+        _firstNonEmptyString(populatedOrders.map((order) => order.shopId));
+
+    final resolvedOrderItemIds =
+        payment.orderItemsId ??
+        populatedOrders
+            .expand((order) => order.orderItemsIds ?? const <String>[])
+            .toSet()
+            .toList();
+
+    final populatedSubscription = resolvedSubscriptionId != null
+        ? _subscriptionBox.get(resolvedSubscriptionId)
+        : null;
+    if (populatedSubscription != null) {
+      _populateSubscriptionRelations(populatedSubscription);
+    }
+
+    final populatedUser = resolvedUserId != null
+        ? _authBox.get(resolvedUserId)
+        : null;
+    final populatedShop = resolvedShopId != null
+        ? getShopById(resolvedShopId)
+        : null;
+
+    final populatedPayment = PaymentHiveModel(
+      id: payment.id,
+      provider: payment.provider,
+      status: payment.status,
+      amount: payment.amount,
+      paidAt: payment.paidAt,
+      orderId: payment.orderId,
+      subscriptionId: resolvedSubscriptionId,
+      userId: resolvedUserId,
+      shopId: resolvedShopId,
+      orderItemsId: resolvedOrderItemIds,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
+      orders: populatedOrders,
+      subscription: populatedSubscription,
+      user: populatedUser,
+      shop: populatedShop,
+    );
+
+    return populatedPayment;
   }
 
   Future<bool> updatePayment(String id, PaymentHiveModel payment) async {
@@ -754,27 +988,34 @@ class HiveService {
   Future<SubscriptionHiveModel> createSubscription(
     SubscriptionHiveModel subscription,
   ) async {
+    final key =
+        subscription.id ?? DateTime.now().microsecondsSinceEpoch.toString();
+    subscription = SubscriptionHiveModel(
+      id: key,
+      userId: subscription.userId,
+      shopId: subscription.shopId,
+      subscriptionPlanId: subscription.subscriptionPlanId,
+      startDate: subscription.startDate,
+    );
     await _subscriptionBox.put(subscription.id, subscription);
     return subscription;
   }
 
   SubscriptionHiveModel? getSubscriptionById(String id) {
     final subscription = _subscriptionBox.get(id);
-    if (subscription != null && subscription.subscriptionPlanId != null) {
-      // Ensure subscription plan with products is loaded
-      _populateSubscriptionPlanProducts(subscription.subscriptionPlanId!);
+    if (subscription != null) {
+      _populateSubscriptionRelations(subscription);
     }
     return subscription;
   }
 
   List<SubscriptionHiveModel> getAllSubscriptions() {
     final subscriptions = _subscriptionBox.values.toList();
-    // Preload all subscription plans with their products
+    // Populate all relationships
     for (final subscription in subscriptions) {
-      if (subscription.subscriptionPlanId != null) {
-        _populateSubscriptionPlanProducts(subscription.subscriptionPlanId!);
-      }
+      _populateSubscriptionRelations(subscription);
     }
+
     return subscriptions;
   }
 
@@ -782,11 +1023,10 @@ class HiveService {
     final subscriptions = _subscriptionBox.values
         .where((subscription) => subscription.userId == userId)
         .toList();
-    // Preload subscription plans with their products
+
+    // Populate all relationships
     for (final subscription in subscriptions) {
-      if (subscription.subscriptionPlanId != null) {
-        _populateSubscriptionPlanProducts(subscription.subscriptionPlanId!);
-      }
+      _populateSubscriptionRelations(subscription);
     }
     return subscriptions;
   }
@@ -795,11 +1035,10 @@ class HiveService {
     final subscriptions = _subscriptionBox.values
         .where((subscription) => subscription.shopId == shopId)
         .toList();
-    // Preload subscription plans with their products
+
+    // Populate all relationships
     for (final subscription in subscriptions) {
-      if (subscription.subscriptionPlanId != null) {
-        _populateSubscriptionPlanProducts(subscription.subscriptionPlanId!);
-      }
+      _populateSubscriptionRelations(subscription);
     }
     return subscriptions;
   }
@@ -810,12 +1049,44 @@ class HiveService {
     if (plan != null &&
         plan.productIds != null &&
         plan.productIds!.isNotEmpty) {
-      // Verify products exist and are accessible
-      for (final productId in plan.productIds!) {
-        getProductById(productId);
+      // Fetch and populate products onto the plan
+      final products = plan.productIds!
+          .map((productId) => _productBox.get(productId))
+          .whereType<ProductHiveModel>()
+          .toList();
+      if (products.isNotEmpty) {
+        plan.setProducts(products);
       }
     }
     return plan;
+  }
+
+  // Populate subscription relationships (plan, shop, user)
+  void _populateSubscriptionRelations(SubscriptionHiveModel subscription) {
+    // Populate subscription plan with products
+    final subscriptionPlanId = subscription.subscriptionPlanId;
+    if (subscriptionPlanId != null) {
+      final plan = _populateSubscriptionPlanProducts(subscriptionPlanId);
+      if (plan != null) {
+        subscription.setSubscriptionPlan(plan);
+      }
+    }
+
+    // Populate shop
+    if (subscription.shopId != null) {
+      final shop = _shopBox.get(subscription.shopId);
+      if (shop != null) {
+        subscription.setShop(shop);
+      }
+    }
+
+    // Populate user
+    if (subscription.userId != null) {
+      final user = _authBox.get(subscription.userId);
+      if (user != null) {
+        subscription.setUser(user);
+      }
+    }
   }
 
   Future<bool> updateSubscription(
@@ -848,6 +1119,16 @@ class HiveService {
   Future<SubscriptionPlanHiveModel> createSubscriptionPlan(
     SubscriptionPlanHiveModel subscriptionPlan,
   ) async {
+    final key =
+        subscriptionPlan.id ?? DateTime.now().microsecondsSinceEpoch.toString();
+    subscriptionPlan = SubscriptionPlanHiveModel(
+      id: key,
+      quantity: subscriptionPlan.quantity,
+      frequency: subscriptionPlan.frequency,
+      pricePerCycle: subscriptionPlan.pricePerCycle,
+      productIds: subscriptionPlan.productIds,
+      active: subscriptionPlan.active,
+    );
     await _subscriptionPlanBox.put(subscriptionPlan.id, subscriptionPlan);
     return subscriptionPlan;
   }
