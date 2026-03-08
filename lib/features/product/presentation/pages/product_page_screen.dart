@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/app/routes/app_routes.dart';
 import 'package:resub/core/services/storage/user_session_service.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
@@ -145,6 +146,10 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     ref.listen<ProductState>(productViewModelProvider, (previous, next) {
       if (next.status == ProductStatus.loaded && next.products != null) {
         setState(() {
@@ -177,6 +182,7 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
     });
     ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
       if (next.status == CategoryStatus.loaded && next.categories != null) {
+        print(next.categories);
         setState(() {
           _categories = next.categories!;
         });
@@ -186,21 +192,21 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
     final filteredProducts = _getFilteredProducts();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'My Products',
           style: TextStyle(
-            color: Colors.black87,
+            color: colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.black87),
+          child: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
       ),
       body: Column(
@@ -212,7 +218,10 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(
+                  color: appColors?.border ?? theme.dividerColor,
+                ),
+                color: appColors?.cardBackground ?? theme.cardColor,
               ),
               child: DropdownButton<String>(
                 value: _selectedShopFilter,
@@ -258,14 +267,18 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
                         Icon(
                           Icons.shopping_bag_outlined,
                           size: 64,
-                          color: Colors.grey.shade400,
+                          color:
+                              appColors?.mutedText ??
+                              colorScheme.onSurface.withValues(alpha: 0.55),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No products found',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey.shade600,
+                            color:
+                                appColors?.secondaryText ??
+                                colorScheme.onSurface.withValues(alpha: 0.8),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -273,7 +286,9 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
                           'Add a new product to get started',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey.shade500,
+                            color:
+                                appColors?.mutedText ??
+                                colorScheme.onSurface.withValues(alpha: 0.65),
                           ),
                         ),
                       ],
@@ -304,7 +319,8 @@ class _ProductPageScreenState extends ConsumerState<ProductPageScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add New Product'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF92400E),
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),

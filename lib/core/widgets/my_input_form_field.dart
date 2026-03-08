@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 
 class MyInputFormField extends StatelessWidget {
   final TextEditingController controller;
@@ -33,11 +34,11 @@ class MyInputFormField extends StatelessWidget {
         fillColor: Colors.grey.shade300,
         filled: true,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(30)),
+          borderRadius: BorderRadius.all(Radius.circular(context.rRadius(30))),
           borderSide: BorderSide(color: Colors.grey.shade400),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(30)),
+          borderRadius: BorderRadius.all(Radius.circular(context.rRadius(30))),
           borderSide: BorderSide(color: Colors.grey.shade400),
         ),
       ),

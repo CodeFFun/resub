@@ -5,7 +5,7 @@ import 'package:resub/features/category/presentation/widgets/category_form.dart'
 class UpdateCategoryScreen extends StatelessWidget {
   final CategoryEntity category;
   final Function(CategoryEntity) onCategoryUpdated;
-  final List<String> shops;
+  final List<Map<String, String>> shops;
 
   const UpdateCategoryScreen({
     super.key,

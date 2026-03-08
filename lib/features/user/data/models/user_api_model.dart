@@ -29,9 +29,9 @@ class UserApiModel {
 
   factory UserApiModel.fromJson(Map<String, dynamic> json) {
     return UserApiModel(
-      email: json['email'] as String,
-      password: json['password'] as String,
-      username: json['username'] as String,
+      email: json['email'] as String?,
+      password: json['password'] as String?,
+      username: json['username'] as String?,
       fullName: json['fullName'] as String?,
       profilePicture: json['profilePictureUrl'] as String?,
       phoneNumber: json['phoneNumber'] as String?,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 
 class MyButton extends StatelessWidget {
   final String text;
@@ -22,10 +23,10 @@ class MyButton extends StatelessWidget {
         ),
         onPressed: onPressed,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(context.rSpacing(8)),
           child: Text(
             text,
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            style: TextStyle(color: Colors.white, fontSize: context.rFont(20)),
           ),
         ),
       ),

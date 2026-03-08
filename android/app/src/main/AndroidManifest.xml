@@ -7,10 +7,14 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>   
 
+    <!-- Sensor features for ambient light and proximity -->
+    <uses-feature android:name="android.hardware.sensor.light" android:required="false"/>
+    <uses-feature android:name="android.hardware.sensor.proximity" android:required="false"/>
 
     <application
         android:label="resub"
         android:name="${applicationName}"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -32,6 +36,17 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            
+            <!-- Deep link for eSewa payment callback -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data 
+                    android:scheme="https"
+                    android:host="resub.app"
+                    android:pathPrefix="/payment-callback"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

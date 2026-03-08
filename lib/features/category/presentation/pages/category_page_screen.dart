@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/app/routes/app_routes.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
 import 'package:resub/features/category/presentation/pages/create_category_screen.dart';
@@ -7,6 +8,8 @@ import 'package:resub/features/category/presentation/pages/update_category_scree
 import 'package:resub/features/category/presentation/state/category_state.dart';
 import 'package:resub/features/category/presentation/view_models/category_view_model.dart';
 import 'package:resub/features/category/presentation/widgets/category_card.dart';
+import 'package:resub/features/shop/presentation/state/shop_state.dart';
+import 'package:resub/features/shop/presentation/view_models/shop_view_model.dart';
 
 class CategoryPageScreen extends ConsumerStatefulWidget {
   const CategoryPageScreen({super.key});
@@ -16,8 +19,8 @@ class CategoryPageScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
-  late List<CategoryEntity> _categories = [];
-  late final List<String> _shops = [];
+  List<CategoryEntity> _categories = [];
+  List<Map<String, String>> _shops = [];
 
   @override
   void initState() {
@@ -28,36 +31,41 @@ class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
   }
 
   void _loadUserData() async {
-    await ref.read(categoryViewModelProvider.notifier).getAllCategories();
+    await ref.read(shopViewModelProvider.notifier).getAllShopsOfUser();
+    _loadCategories();
   }
 
-  void _handleAddCategory(CategoryEntity category) {
-    setState(() {
-      _categories.add(
-        category.copyWith(id: DateTime.now().millisecondsSinceEpoch.toString()),
-      );
-    });
-    if (mounted) {
-      Navigator.pop(context);
-    }
+  void _loadCategories() async {
+    await Future.wait(
+      _shops.map(
+        (shop) async => await ref
+            .read(categoryViewModelProvider.notifier)
+            .getCategoriesByShopId(shopId: shop['id'] ?? ''),
+      ),
+    );
   }
 
-  void _handleUpdateCategory(CategoryEntity category) {
-    setState(() {
-      final index = _categories.indexWhere((cat) => cat.id == category.id);
-      if (index != -1) {
-        _categories[index] = category;
-      }
-    });
-    if (mounted) {
-      Navigator.pop(context);
-    }
+  void _handleAddCategory(CategoryEntity category) async {
+    await ref
+        .read(categoryViewModelProvider.notifier)
+        .createCategory(categoryEntity: category);
+    AppRoutes.pop(context);
   }
 
-  void _handleDeleteCategory(String id) {
-    setState(() {
-      _categories.removeWhere((category) => category.id == id);
-    });
+  void _handleUpdateCategory(CategoryEntity category) async {
+    await ref
+        .read(categoryViewModelProvider.notifier)
+        .updateCategory(
+          categoryEntity: category,
+          categoryId: category.id ?? '',
+        );
+    AppRoutes.pop(context);
+  }
+
+  void _handleDeleteCategory(String id) async {
+    await ref
+        .read(categoryViewModelProvider.notifier)
+        .deleteCategory(categoryId: id);
   }
 
   void _openCreateCategoryScreen() {
@@ -83,29 +91,64 @@ class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     ref.listen<CategoryState>(categoryViewModelProvider, (previous, next) {
-      if (next.status == CategoryStatus.loaded) {
+      if (next.status == CategoryStatus.loaded && next.categories != null) {
         setState(() {
-          _categories = next.categories ?? [];
+          _categories = next.categories!;
+        });
+      } else if (next.status == CategoryStatus.created &&
+          next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      } else if (next.status == CategoryStatus.updated &&
+          next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      } else if (next.status == CategoryStatus.deleted &&
+          next.categories != null) {
+        setState(() {
+          _categories = next.categories!;
+        });
+      }
+    });
+    ref.listen(shopViewModelProvider, (previous, next) {
+      if (next.status == ShopStatus.loaded) {
+        setState(() {
+          _shops =
+              next.shops
+                  ?.map(
+                    (shop) => {
+                      'id': shop.id ?? '',
+                      'name': shop.name ?? 'Unknown Shop',
+                    },
+                  )
+                  .toList() ??
+              [];
         });
       }
     });
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'My Categories',
           style: TextStyle(
-            color: Colors.black87,
+            color: colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.black87),
+          child: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
       ),
       body: Column(
@@ -119,14 +162,18 @@ class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
                         Icon(
                           Icons.category_outlined,
                           size: 64,
-                          color: Colors.grey.shade400,
+                          color:
+                              appColors?.mutedText ??
+                              colorScheme.onSurface.withValues(alpha: 0.55),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No categories yet',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey.shade600,
+                            color:
+                                appColors?.secondaryText ??
+                                colorScheme.onSurface.withValues(alpha: 0.8),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -134,7 +181,9 @@ class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
                           'Add a new category to get started',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey.shade500,
+                            color:
+                                appColors?.mutedText ??
+                                colorScheme.onSurface.withValues(alpha: 0.65),
                           ),
                         ),
                       ],
@@ -165,7 +214,8 @@ class _CategoryPageScreenState extends ConsumerState<CategoryPageScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add New Category'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF92400E),
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),

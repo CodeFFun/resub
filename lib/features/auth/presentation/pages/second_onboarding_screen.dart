@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 import 'package:resub/core/utils/snackbar_utils.dart';
 import 'package:resub/features/auth/presentation/pages/login_screen.dart';
 import 'package:resub/features/auth/presentation/state/auth_state.dart';
@@ -52,7 +53,7 @@ class _SecondOnboardingScreenState
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: EdgeInsets.all(context.rSpacing(32)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -60,14 +61,14 @@ class _SecondOnboardingScreenState
               Text(
                 'Please select\nYour role',
                 style: TextStyle(
-                  fontSize: 48,
+                  fontSize: context.rFont(48),
                   fontWeight: FontWeight.bold,
                   color: Colors.brown[900],
                   height: 1.2,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: context.rHeight(60)),
               // Clipboard icon
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -96,54 +97,57 @@ class _SecondOnboardingScreenState
                   ),
                 ],
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: context.rHeight(60)),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: context.rHeight(56),
                 child: ElevatedButton(
                   onPressed: _handleNextPressed,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.brown[800],
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(context.rRadius(28)),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Next',
-                    style: TextStyle(fontSize: 18, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: context.rFont(18),
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: context.rHeight(40)),
               // Page indicator
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 8,
-                    height: 4,
+                    width: context.rWidth(8),
+                    height: context.rHeight(4),
                     decoration: BoxDecoration(
                       color: Colors.brown[300],
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(context.rRadius(2)),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: context.rWidth(8)),
                   Container(
-                    width: 60,
-                    height: 4,
+                    width: context.rWidth(60),
+                    height: context.rHeight(4),
                     decoration: BoxDecoration(
                       color: Colors.brown[900],
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(context.rRadius(2)),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: context.rWidth(8)),
                   Container(
-                    width: 8,
-                    height: 4,
+                    width: context.rWidth(8),
+                    height: context.rHeight(4),
                     decoration: BoxDecoration(
                       color: Colors.brown[300],
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(context.rRadius(2)),
                     ),
                   ),
                 ],

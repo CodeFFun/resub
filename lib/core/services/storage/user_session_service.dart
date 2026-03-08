@@ -107,6 +107,11 @@ class UserSessionService {
     return _prefs.getString(_keyUserProfilePicture);
   }
 
+  //Get current user role
+  String? getCurrentUSerRole() {
+    return _prefs.getString(_keyUserRole);
+  }
+
   // Clear user session (logout)
   Future<void> clearSession() async {
     await _prefs.remove(_keyIsLoggedIn);

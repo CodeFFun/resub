@@ -5,8 +5,17 @@ import 'package:flutter/foundation.dart';
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const bool isPhysicalDevice = false;
-  static const String _ipAddress = '192.168.1.1';
+  // CONNECTIVITY DEBUGGING:
+  // If you're getting "connection timeout" errors:
+  // 1. Verify your server is running: curl http://192.168.137.1:8080
+  // 2. Check server is accessible: ping 192.168.137.1
+  // 3. Verify device and server are on same network
+  // 4. Check firewall isn't blocking port 8080
+  // 5. For emulator use: isPhysicalDevice = false
+
+  static const bool isPhysicalDevice = true;
+  // static const String _ipAddress = '192.168.137.1';
+  static const String _ipAddress = '192.168.137.1';
   static const int _port = 8080;
 
   // Base URLs
@@ -28,6 +37,7 @@ class ApiEndpoints {
 
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration sendTimeout = Duration(seconds: 30);
 
   // ============ User Endpoints ============
   static const String userLogin = '/auth/login';
@@ -48,4 +58,14 @@ class ApiEndpoints {
 
   // ============ Product Endpoints ============
   static const String product = '/product';
+  //=========== Subscription Endpoints ============
+  static const String subscription = '/subscription';
+  static const String subscriptionPlan = '/subscription-plan';
+  // ============ Order Endpoints ============
+  static const String order = '/order';
+  static const String orderItem = '/order-item';
+
+  // ============ Payment Endpoints ============
+  static const String payment = '/payment';
+  static const String paymentVerification = '/payment/verify';
 }

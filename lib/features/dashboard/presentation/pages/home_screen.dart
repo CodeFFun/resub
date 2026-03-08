@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
 import 'package:resub/features/dashboard/presentation/pages/bottom_navigation_screen/bottom_home_screen.dart';
 import 'package:resub/features/dashboard/presentation/pages/bottom_navigation_screen/bottom_my_cart_screen.dart';
 import 'package:resub/features/dashboard/presentation/pages/bottom_navigation_screen/bottom_order_screen.dart';
@@ -28,16 +29,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: lstBottomScreen[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF92400E),
-        unselectedItemColor: Colors.grey[600],
+        backgroundColor: colorScheme.surface,
+        selectedItemColor: appColors?.deepBrand ?? colorScheme.primary,
+        unselectedItemColor:
+            appColors?.mutedText ??
+            colorScheme.onSurface.withValues(alpha: 0.7),
         selectedFontSize: 12,
         unselectedFontSize: 12,
         items: const [
@@ -48,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.grid_view),
-            label: 'My Cart',
+            label: 'Subscriptions',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],

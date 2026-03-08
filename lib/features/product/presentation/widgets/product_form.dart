@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:resub/app/theme/theme_data.dart';
+import 'package:resub/core/utils/responsive_utils.dart';
 import 'package:resub/core/widgets/my_button.dart';
 import 'package:resub/core/widgets/my_input_form_field.dart';
 import 'package:resub/features/category/domain/entities/category_entity.dart';
@@ -121,27 +123,31 @@ class _ProductFormState extends State<ProductForm> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final appColors = theme.extension<AppThemeColors>();
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         title: Text(
           widget.showBackButton ? 'Update Product' : 'Add New Product',
-          style: const TextStyle(
-            color: Colors.black87,
-            fontSize: 18,
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: context.rFont(18),
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.black87),
+          child: Icon(Icons.arrow_back, color: colorScheme.onSurface),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(context.rSpacing(20)),
           child: Form(
             key: _formKey,
             child: Column(
@@ -153,7 +159,7 @@ class _ProductFormState extends State<ProductForm> {
                   labelText: 'Product Name',
                   icon: const Icon(Icons.shopping_bag_outlined),
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Description
                 MyInputFormField(
@@ -161,7 +167,7 @@ class _ProductFormState extends State<ProductForm> {
                   labelText: 'Description',
                   icon: const Icon(Icons.description_outlined),
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Base Price
                 MyInputFormField(
@@ -172,7 +178,7 @@ class _ProductFormState extends State<ProductForm> {
                     decimal: true,
                   ),
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Stock Quantity
                 MyInputFormField(
@@ -181,7 +187,7 @@ class _ProductFormState extends State<ProductForm> {
                   icon: const Icon(Icons.inventory_2_outlined),
                   inputType: TextInputType.number,
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: context.rHeight(15)),
 
                 // Discount
                 MyInputFormField(
@@ -192,26 +198,29 @@ class _ProductFormState extends State<ProductForm> {
                     decimal: true,
                   ),
                 ),
-                const SizedBox(height: 25),
+                SizedBox(height: context.rHeight(25)),
 
                 // Category (Radio buttons - single select)
                 Text(
                   'Select Category',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: context.rFont(16),
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.rHeight(12)),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(context.rSpacing(16)),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    color: appColors?.cardBackground ?? theme.cardColor,
+                    borderRadius: BorderRadius.circular(context.rRadius(12)),
+                    border: Border.all(
+                      color: appColors?.border ?? theme.dividerColor,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha:0.1),
+                        color: Colors.black.withValues(alpha: 0.08),
                         spreadRadius: 1,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -223,7 +232,9 @@ class _ProductFormState extends State<ProductForm> {
                       widget.categories.length,
                       (index) => Padding(
                         padding: EdgeInsets.only(
-                          bottom: index < widget.categories.length - 1 ? 8 : 0,
+                          bottom: index < widget.categories.length - 1
+                              ? context.rHeight(8)
+                              : 0,
                         ),
                         child: RadioListTile<String>(
                           value: widget.categories[index].id ?? '',
@@ -235,37 +246,40 @@ class _ProductFormState extends State<ProductForm> {
                           },
                           title: Text(
                             widget.categories[index].name ?? 'Unnamed category',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
+                            style: TextStyle(
+                              fontSize: context.rFont(14),
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           contentPadding: EdgeInsets.zero,
-                          activeColor: const Color(0xFF92400E),
+                          activeColor: colorScheme.primary,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 25),
+                SizedBox(height: context.rHeight(25)),
 
                 Text(
                   'Select Shop',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: context.rFont(16),
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: context.rHeight(12)),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(context.rSpacing(16)),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    color: appColors?.cardBackground ?? theme.cardColor,
+                    borderRadius: BorderRadius.circular(context.rRadius(12)),
+                    border: Border.all(
+                      color: appColors?.border ?? theme.dividerColor,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.1),
+                        color: Colors.black.withValues(alpha: 0.08),
                         spreadRadius: 1,
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -277,7 +291,9 @@ class _ProductFormState extends State<ProductForm> {
                       widget.shops.length,
                       (index) => Padding(
                         padding: EdgeInsets.only(
-                          bottom: index < widget.shops.length - 1 ? 8 : 0,
+                          bottom: index < widget.shops.length - 1
+                              ? context.rHeight(8)
+                              : 0,
                         ),
                         child: RadioListTile<String>(
                           value: widget.shops[index].id ?? '',
@@ -289,19 +305,19 @@ class _ProductFormState extends State<ProductForm> {
                           },
                           title: Text(
                             widget.shops[index].name ?? 'Unnamed shop',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
+                            style: TextStyle(
+                              fontSize: context.rFont(14),
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           contentPadding: EdgeInsets.zero,
-                          activeColor: const Color(0xFF92400E),
+                          activeColor: colorScheme.primary,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: context.rHeight(30)),
                 // Buttons
                 SizedBox(
                   width: double.infinity,
@@ -311,20 +327,22 @@ class _ProductFormState extends State<ProductForm> {
                   ),
                 ),
                 if (widget.showBackButton) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: context.rHeight(12)),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF92400E)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: colorScheme.primary),
+                        padding: EdgeInsets.symmetric(
+                          vertical: context.rHeight(12),
+                        ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Back',
                         style: TextStyle(
-                          color: Color(0xFF92400E),
-                          fontSize: 16,
+                          color: colorScheme.primary,
+                          fontSize: context.rFont(16),
                         ),
                       ),
                     ),
